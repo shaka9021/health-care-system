@@ -594,6 +594,7 @@ Inner Join Detalle_Pago DP
 On P.ID_Pago = DP.ID_Pago
 Inner Join Servicio S
 On DP.ID_Servicio = S.ID_Servicio
+GROUP BY P.ID_Pago, P.Fecha_Pago, PA.Nombres, PA.Apellidos, U.Nombre_Usuario
 );
 
 Create View Detalle_PagoV as (
