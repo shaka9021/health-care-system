@@ -6,11 +6,10 @@
 package gui;
 
 import repository.Conexion;
-import repository.Medico;
 import java.awt.Toolkit;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.StringTokenizer;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JOptionPane;
 
 /**
@@ -160,116 +159,85 @@ public class AgregarMedico extends javax.swing.JInternalFrame {
         setBounds(0, 0, 684, 349);
     }// </editor-fold>//GEN-END:initComponents
 
-    public void Guardar(){
+    public void Guardar() {
         String Nombre = txtNombre.getText().trim();
         String Apellido = txtApellido.getText().trim();
         int cmbEsp = cmbEspecialidad.getSelectedIndex();
         int ID_Especialidad = ID_Esp[cmbEsp];
-     /*   String HoraInicio = (String) cmbDesde.getSelectedItem();
-        String HoraFinal = (String) cmbHasta.getSelectedItem();
-        boolean L = ckL.isSelected();
-        boolean M = ckM.isSelected();
-        boolean X = ckX.isSelected();
-        boolean J = ckJ.isSelected();
-        boolean V = ckV.isSelected();
-        boolean S = ckS.isSelected();
-        boolean D = ckD.isSelected();
-        
-        int HRi = cmbDesde.getSelectedIndex();
-        int HRs = cmbHasta.getSelectedIndex();
-        
-        if(HRi>HRs){
-                    JOptionPane.showMessageDialog
-        (this, "La hora de salida no puede ser menor que la de entrada, y la hora de entrada no puede ser mayor que"
-                + " la de salida",
-                "Seleccione correctamente",JOptionPane.ERROR_MESSAGE);
-                    return;
-        }
-        
-             */
-        
-        if("".equals(Nombre)||"".equals(Apellido)||cmbEsp==0)
-                //||"<Seleccione>".equals(HoraFinal)
-           //     ||"<Seleccione>".equals(HoraInicio))
+
+        if ("".equals(Nombre) || "".equals(Apellido) || cmbEsp == 0) //||"<Seleccione>".equals(HoraFinal)
+        //     ||"<Seleccione>".equals(HoraInicio))
         {
-                    JOptionPane.showMessageDialog
-        (this, "Complete todos los campos y seleccione correctamente",
-                "Complete",JOptionPane.ERROR_MESSAGE);
-        }
-        else{
-          
-            
+            JOptionPane.showMessageDialog(this,
+                "Complete todos los campos y seleccione correctamente",
+                "Complete", JOptionPane.ERROR_MESSAGE);
+        } else {
+
             Horario H = new Horario(null, true);
             H.setAM(this);
             H.setNombre(Nombre);
             H.setApellido(Apellido);
             H.setID_Especialidad(ID_Especialidad);
             H.setVisible(true);
-            
-       //     Limpiar();// TODO add your handling code here:
 
-            }
-        
+        }
+
     }
-    
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-Guardar(); 
+        Guardar();
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    ResultSet resultado;
-    int ID_Esp [];
-    
+    int ID_Esp[];
+
     private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameOpened
-      
-        
-     int ID_Especialidad = 0;
-     
-      try{
-         
-     resultado = Conexion.consulta("Select Max(ID_Especialidad) from Especialidad");
-         
-     while(resultado.next()){
-         ID_Especialidad = resultado.getInt(1);
-     }
-     }catch(SQLException ex){
-         
-     }
-        
-      
-      ID_Especialidad++;
-   
-      ID_Esp = new int[ID_Especialidad];
 
+        int ID_Especialidad = 0;
 
-       
-      ID_Esp [0] = 0; 
-      
-      int i = 1;
-      
-      try{
-         
-     resultado = Conexion.consulta("Select ID_Especialidad, Nombre from Especialidad Where Estado = 1");
-         
-     while(resultado.next()){
-         ID_Esp [i] = resultado.getInt(1);
-         cmbEspecialidad.addItem(resultado.getString(2).trim());
-         i++;
-     }
-     }catch(SQLException ex){
-         
-     }
-       
-        
+        try {
+
+            ID_Especialidad = Conexion.runner().query(
+                "Select Max(ID_Especialidad) from Especialidad", rs -> rs.
+                    getInt(1));
+
+        } catch (SQLException ex) {
+
+        }
+
+        ID_Especialidad++;
+
+        ID_Esp = new int[ID_Especialidad];
+
+        ID_Esp[0] = 0;
+
+        int i = 1;
+
+        try {
+
+            List<List<String>> resultados = Conexion.runner().execute(
+                "Select ID_Especialidad, Nombre from Especialidad Where Estado = ?",
+                rs -> Arrays.asList(String.valueOf(rs.getInt(1)), rs.
+                    getString(2).trim()),
+                1);
+
+            for (List<String> resultado : resultados) {
+                ID_Esp[i] = Integer.valueOf(resultado.get(0));
+                cmbEspecialidad.addItem(resultado.get(1));
+                i++;
+            }
+        } catch (SQLException ex) {
+
+        }
 
 // TODO add your handling code here:
     }//GEN-LAST:event_formInternalFrameOpened
 
-    public void Limpiar(){
+    public void Limpiar() {
         txtApellido.setText("");
         txtNombre.setText("");
 //        cmbDesde.setSelectedIndex(0);
         cmbEspecialidad.setSelectedIndex(0);
-  /*     cmbHasta.setSelectedIndex(0);
+        /*     cmbHasta.setSelectedIndex(0);
         ckD.setSelected(false);
         ckJ.setSelected(false);
         ckL.setSelected(false);
@@ -278,31 +246,31 @@ Guardar();
         ckV.setSelected(false);
         ckX.setSelected(false);*/
     }
-    
+
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-Limpiar();        // TODO add your handling code here:
+        Limpiar();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-this.dispose();        // TODO add your handling code here:
+        this.dispose();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void txtNombreKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreKeyTyped
-char a = evt.getKeyChar();
+        char a = evt.getKeyChar();
 
-if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
-    evt.consume();
-    Toolkit.getDefaultToolkit().beep();
-}        // TODO add your handling code here:
+        if (!Character.isLetter(a) && !Character.isISOControl(a) && a != ' ') {
+            evt.consume();
+            Toolkit.getDefaultToolkit().beep();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtNombreKeyTyped
 
     private void txtApellidoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtApellidoKeyTyped
-char a = evt.getKeyChar();
+        char a = evt.getKeyChar();
 
-if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
-    evt.consume();
-    Toolkit.getDefaultToolkit().beep();
-}        // TODO add your handling code here:
+        if (!Character.isLetter(a) && !Character.isISOControl(a) && a != ' ') {
+            evt.consume();
+            Toolkit.getDefaultToolkit().beep();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtApellidoKeyTyped
 
 

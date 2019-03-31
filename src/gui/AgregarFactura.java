@@ -11,11 +11,11 @@ import repository.Pago;
 import com.toedter.calendar.JDateChooser;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -244,50 +244,44 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         int cmbPac = cmbPaciente.getSelectedIndex();
         int cmbMed = cmbMedico.getSelectedIndex();
-        
+
         int ID_Paciente = ID_Pac[cmbPac];
         int ID_Medico = ID_Med[cmbMed];
         int Cantidad = 1;
 
-
         int fila = jTable1.getSelectedRow();
 
-        if (cmbMed == 0 || cmbPac == 0 ) {
-            JOptionPane.showMessageDialog(this, "Complete todos los campos y seleccione correctamente",
-                    "Complete", JOptionPane.ERROR_MESSAGE);
+        if (cmbMed == 0 || cmbPac == 0) {
+            JOptionPane.showMessageDialog(this,
+                "Complete todos los campos y seleccione correctamente",
+                "Complete", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        if (jTable1.getRowCount()== 0) {
+        if (jTable1.getRowCount() == 0) {
             JOptionPane.showMessageDialog(this, "Agregue al menos un servicio",
-                    "Agregue", JOptionPane.ERROR_MESSAGE);
+                "Agregue", JOptionPane.ERROR_MESSAGE);
             return;
-        } 
-            
-          
- 
-            Pago.Agregar_Pago(ID_Paciente, ID_Medico);
-            int ID_PMax = 0;
-            try{
-                
-                resultado = Conexion.consulta("Select Max(ID_Pago) from Pago");
-                
-                while(resultado.next()){
-                    ID_PMax = resultado.getInt(1);
-                }
-                
-            }catch(SQLException ex){}
-            
-            for(int i=0; i<jTable1.getRowCount(); i++){
-                
-            int ID_Servicio = Integer.parseInt(model.getValueAt(i, 0).toString());
+        }
+
+        Pago.Agregar_Pago(ID_Paciente, ID_Medico);
+        int ID_PMax = 0;
+        try {
+
+            ID_PMax = Conexion.runner().query(
+                "Select Max(ID_Pago) from Pago", rs -> rs.getInt(1));
+
+        } catch (SQLException ex) {
+        }
+
+        for (int i = 0; i < jTable1.getRowCount(); i++) {
+
+            int ID_Servicio = Integer.
+                parseInt(model.getValueAt(i, 0).toString());
             Pago.Agregar_DetellePago(ID_PMax, ID_Servicio, Cantidad);
-            
-            }
-            
-            
-            Limpiar();// TODO add your handling code here:
-            
-       
+
+        }
+
+        Limpiar();// TODO add your handling code here:
 
     }
 
@@ -295,29 +289,26 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
         Guardar();
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    ResultSet resultado;
     int ID_Serv[];
     int ID_Pac[];
     int ID_Med[];
 
     private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameOpened
 
-     Date Hoy = new Date();
-     jDateChooser1.setDate(Hoy);
-        
-     String [] Header = {"Codigo","Nombre","Descripcion","Precio"};
-     model.setColumnIdentifiers(Header);
-     jTable1.setModel(model);
-             
+        Date Hoy = new Date();
+        jDateChooser1.setDate(Hoy);
+
+        String[] Header = {"Codigo", "Nombre", "Descripcion", "Precio"};
+        model.setColumnIdentifiers(Header);
+        jTable1.setModel(model);
+
         int ID_ServicioMax = 0;
 
         try {
 
-            resultado = Conexion.consulta("Select Max(ID_Servicio) from Servicio");
+            ID_ServicioMax = Conexion.runner().query(
+                "Select Max(ID_Servicio) from Servicio", rs -> rs.getInt(1));
 
-            while (resultado.next()) {
-                ID_ServicioMax = resultado.getInt(1);
-            }
         } catch (SQLException ex) {
 
         }
@@ -332,11 +323,14 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            resultado = Conexion.consulta("Select ID_Servicio, Nombre_Servicio from Servicio Where Estado = "+true);
+            List<List<String>> resultados = Conexion.runner().execute(
+                "Select ID_Servicio, Nombre_Servicio from Servicio Where Estado = ?",
+                rs -> Arrays.asList(rs.getString(1), rs.getString(2).trim()),
+                1);
 
-            while (resultado.next()) {
-                ID_Serv[i] = resultado.getInt(1);
-                cmbServicio.addItem(resultado.getString(2).trim());
+            for (List<String> resultado : resultados) {
+                ID_Serv[i] = Integer.parseInt(resultado.get(0));
+                cmbServicio.addItem(resultado.get(1));
                 i++;
             }
         } catch (SQLException ex) {
@@ -347,13 +341,11 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            resultado = Conexion.consulta("Select Max(ID_Paciente) from Paciente");
+            ID_Paciente = Conexion.runner().query(
+                "Select Max(ID_Paciente) from Paciente", rs -> rs.getInt(
+                    1));
 
-            while (resultado.next()) {
-                ID_Paciente = resultado.getInt(1);
-            }
         } catch (SQLException ex) {
-
         }
 
         ID_Paciente++;
@@ -366,11 +358,15 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            resultado = Conexion.consulta("Select ID_Paciente, Nombres, Apellidos from Paciente Where Estado = "+true);
+            List<List<String>> resultados = Conexion.runner().execute(
+                "Select ID_Paciente, Nombres, Apellidos from Paciente Where Estado = ?",
+                rs -> Arrays.asList(rs.getString(1),
+                    rs.getString(2).trim() + " " + rs.getString(3).trim()),
+                1);
 
-            while (resultado.next()) {
-                ID_Pac[j] = resultado.getInt(1);
-                cmbPaciente.addItem(resultado.getString(2).trim() + " " + resultado.getString(3).trim());
+            for (List<String> resultado : resultados) {
+                ID_Pac[j] = Integer.parseInt(resultado.get(0));
+                cmbPaciente.addItem(resultado.get(1));
                 j++;
             }
         } catch (SQLException ex) {
@@ -381,11 +377,9 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            resultado = Conexion.consulta("Select Max(ID_Medico) from Medico");
+            ID_Medico = Conexion.runner().query(
+                "Select Max(ID_Medico) from Medico", rs -> rs.getInt(1));
 
-            while (resultado.next()) {
-                ID_Medico = resultado.getInt(1);
-            }
         } catch (SQLException ex) {
 
         }
@@ -400,32 +394,34 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            resultado = Conexion.consulta("Select ID_Medico, Nombres, Apellidos from Medico  Where Estado = "+true);
+            List<List<String>> resultados = Conexion.runner().execute(
+                "Select ID_Medico, Nombres, Apellidos from Medico  Where Estado = ?",
+                rs -> Arrays.asList(rs.getString(1), rs.getString(2).trim()
+                    + " "
+                    + rs.getString(3).trim()),
+                1);
 
-            while (resultado.next()) {
-                ID_Med[k] = resultado.getInt(1);
-                cmbMedico.addItem(resultado.getString(2).trim() + " " + resultado.getString(3).trim());
+            for (List<String> resultado : resultados) {
+                ID_Med[k] = Integer.parseInt(resultado.get(0));
+                cmbMedico.addItem(resultado.get(1));
                 k++;
             }
         } catch (SQLException ex) {
 
         }
-       
+
         TableColumnModel columnModel = jTable1.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(30);
         columnModel.getColumn(1).setPreferredWidth(150);
         columnModel.getColumn(2).setPreferredWidth(250);
         columnModel.getColumn(3).setPreferredWidth(50);
-        
 
-      /*columnModel.getColumn(0).setResizable(false);
+
+        /*columnModel.getColumn(0).setResizable(false);
         columnModel.getColumn(1).setResizable(false);
         columnModel.getColumn(2).setResizable(false);
         columnModel.getColumn(3).setResizable(false);*/
-
-
         jTable1.setColumnModel(columnModel);
-
 
 // TODO add your handling code here:
     }//GEN-LAST:event_formInternalFrameOpened
@@ -434,7 +430,6 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
         cmbServicio.setSelectedIndex(0);
         cmbPaciente.setSelectedIndex(0);
         cmbMedico.setSelectedIndex(0);
-       
 
         Date hoy = new Date();
         jDateChooser1.setDate(hoy);
@@ -458,53 +453,57 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_cmbServicioItemStateChanged
 
     double Total = 0;
-    
+
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
 
-    int cmbServ = cmbServicio.getSelectedIndex();
-    
-    if(cmbServ == 0){
-        JOptionPane.showMessageDialog(this, "Seleccione un servicio para agregar","Seleccione",JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-    
-    int ID_Servicio = ID_Serv[cmbServ];
-    String Nombre = "";
-    String Descripcion = "";
-    double Precio = 0;
-    
-    try{
-      
-        resultado = Conexion.consulta("Select Nombre_Servicio, Descripcion_Servicio, Precio_Servicio "
-                + "from Servicio where ID_Servicio = "+ID_Servicio);
-        
-        while(resultado.next()){
-            Nombre = resultado.getString(1);
-            Descripcion = resultado.getString(2);
-            Precio = resultado.getDouble(3);
-        }
-        
-    }catch(SQLException ex){}
-    
-    String [] Datos = new String[4];
-    
-    Datos [0] = String.valueOf(ID_Servicio);
-    Datos [1] = Nombre.trim();
-    Datos [2] = Descripcion.trim();
-    Datos [3] = String.valueOf(Precio);
+        int cmbServ = cmbServicio.getSelectedIndex();
 
-    model.addRow(Datos);
-    
-    Total = Total+Precio;
-    txtTotal.setText(String.valueOf(Total));
-    
-    
-    jTable1.setModel(model);
+        if (cmbServ == 0) {
+            JOptionPane.showMessageDialog(this,
+                "Seleccione un servicio para agregar", "Seleccione",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int ID_Servicio = ID_Serv[cmbServ];
+        String Nombre = "";
+        String Descripcion = "";
+        double Precio = 0;
+
+        try {
+
+            List<List<String>> resultados = Conexion.runner().execute(
+                "Select Nombre_Servicio, Descripcion_Servicio, Precio_Servicio "
+                + "from Servicio where ID_Servicio = ?",
+                rs -> Arrays.asList(rs.getString(1), rs.getString(2),
+                    String.valueOf(rs.getDouble(3))),
+                ID_Servicio);
+
+            for (List<String> resultado : resultados) {
+                Nombre = resultado.get(0);
+                Descripcion = resultado.get(1);
+                Precio = Double.parseDouble(resultado.get(2));
+            }
+
+        } catch (SQLException ex) {
+        }
+
+        String[] Datos = new String[4];
+
+        Datos[0] = String.valueOf(ID_Servicio);
+        Datos[1] = Nombre.trim();
+        Datos[2] = Descripcion.trim();
+        Datos[3] = String.valueOf(Precio);
+
+        model.addRow(Datos);
+
+        Total = Total + Precio;
+        txtTotal.setText(String.valueOf(Total));
+
+        jTable1.setModel(model);
 
 // TODO add your handling code here:
     }//GEN-LAST:event_jButton4ActionPerformed
-
-
 
     DefaultTableModel model = new DefaultTableModel() {
 

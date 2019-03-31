@@ -20,9 +20,13 @@ import javax.swing.JOptionPane;
 import repository.Consulta;
 import java.awt.Desktop;
 import java.awt.event.KeyEvent;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -274,48 +278,47 @@ public class AgregarDiagnostico extends javax.swing.JDialog {
         String Diagnostico = txtDiagnostico.getText().trim();
         String Receta = txtReceta.getText().trim();
 
-        if (ID_Cita == 0 || ("".equals(ConsultaF) && "".equals(Diagnostico) && "".equals(Receta))) {
-            JOptionPane.showMessageDialog(this, "Complete los campos necesarios",
+        if (ID_Cita == 0 || ("".equals(ConsultaF) && "".equals(Diagnostico)
+            && "".equals(Receta))) {
+            JOptionPane.
+                showMessageDialog(this, "Complete los campos necesarios",
                     "Complete", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         Consulta.Agregar_Consulta(ID_Cita, ConsultaF, Diagnostico, Receta);
         Cita.Cita_Atendida(ID_Cita);
-        
+
         AC.dispose();
-        
+
         this.setVisible(false);
-        
-          Map<String, Object> parametros = new HashMap<String, Object>();
+
+        Map<String, Object> parametros = new HashMap<String, Object>();
         parametros.put("ID_C", ID_Cita);
 
-          
-        File miDir = new File ("");
-        
-        String reporte = miDir.getAbsolutePath()+"/src/report/Receta.jasper";
+        File miDir = new File("");
+
+        String reporte = miDir.getAbsolutePath() + "/src/report/Receta.jasper";
 
         JasperPrint jp = null;
-        try {
-            jp = JasperFillManager.fillReport(reporte, parametros, Conexion.get());
-        } catch (JRException ex) {
 
-            //   Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+        try (Connection connection = Conexion.connection()) {
+            jp = JasperFillManager.fillReport(
+                reporte, parametros, connection);
+        } catch (JRException | SQLException ex) {
         }
 
         JasperViewer view = new JasperViewer(jp, false);
-        view.setTitle("Receta - "+Paciente.trim());
+        view.setTitle("Receta - " + Paciente.trim());
 
         view.setZoomRatio((float) 0.95);
         view.setVisible(true);
 
         view.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         view.toFront();
-        
-        
-        
+
         CopiarArchivos();
-        
+
         this.dispose();
 
     }
@@ -330,14 +333,15 @@ public class AgregarDiagnostico extends javax.swing.JDialog {
     int returnVal = 1;
     File[] files;
 
-      public void CopiarArchivos() {
+    public void CopiarArchivos() {
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
 
             Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyy hh_mm a");
             String Fecha = sdf.format(date);
-            String carpeta = "/Expedientes/" + Paciente.trim() + "/Cita_" + ID_Cita + "_Fecha_" + Fecha;
+            String carpeta = "/Expedientes/" + Paciente.trim() + "/Cita_"
+                + ID_Cita + "_Fecha_" + Fecha;
             String SO = System.getProperty("os.name");
             CharSequence windows = "windows";
             if (SO.toLowerCase().contains(windows)) {
@@ -359,11 +363,13 @@ public class AgregarDiagnostico extends javax.swing.JDialog {
             };
 
             for (File file : files) {
-                String ruta_archivo_destino = ruta_carpeta + "/" + file.getName();
+                String ruta_archivo_destino = ruta_carpeta + "/" + file.
+                    getName();
 
                 if (SO.toLowerCase().contains(windows)) {
 
-                    ruta_archivo_destino = ruta_archivo_destino.replace('/', '\\');
+                    ruta_archivo_destino = ruta_archivo_destino.replace('/',
+                        '\\');
                 }
                 Path TO = Paths.get(ruta_archivo_destino);
                 Path FROM = Paths.get(file.getAbsolutePath());
@@ -373,20 +379,25 @@ public class AgregarDiagnostico extends javax.swing.JDialog {
                     Files.copy(FROM, TO, options);
                     // Files.copy(Paths.get(System.getProperty("user.dir"),ruta_carpeta), file.toPath());
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(this, "Archivos No guardados en el expediente " + Paciente.trim() + ""
-                            + "en la carpeta Cita_" + ID_Cita + "_Fecha_" + Fecha,
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                        "Archivos No guardados en el expediente " + Paciente.
+                            trim() + ""
+                        + "en la carpeta Cita_" + ID_Cita + "_Fecha_" + Fecha,
+                        "Error", JOptionPane.ERROR_MESSAGE);
                     return;
 
                 }
 
             }
 
-            JOptionPane.showMessageDialog(this, "Archivos guardados en el expediente de " + Paciente.trim() + ""
-                    + "en la carpeta Cita_" + ID_Cita + "_Fecha_" + Fecha,
-                    "Guardado", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Archivos guardados en el expediente de " + Paciente.trim() + ""
+                + "en la carpeta Cita_" + ID_Cita + "_Fecha_" + Fecha,
+                "Guardado", JOptionPane.INFORMATION_MESSAGE);
 
-            int opcion = JOptionPane.showConfirmDialog(this, "Desea ver los archivos del expediente?", "Ver archivos", JOptionPane.YES_NO_OPTION);
+            int opcion = JOptionPane.showConfirmDialog(this,
+                "Desea ver los archivos del expediente?", "Ver archivos",
+                JOptionPane.YES_NO_OPTION);
 
             if (opcion == JOptionPane.YES_OPTION) {
                 Desktop desktop = null;
@@ -414,17 +425,17 @@ public class AgregarDiagnostico extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void txtConsultaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtConsultaKeyTyped
-if(evt.getKeyChar() == KeyEvent.VK_TAB){
-  txtDiagnostico.requestFocus();
-}
-        
+        if (evt.getKeyChar() == KeyEvent.VK_TAB) {
+            txtDiagnostico.requestFocus();
+        }
+
 // TODO add your handling code here:
     }//GEN-LAST:event_txtConsultaKeyTyped
 
     private void txtDiagnosticoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtDiagnosticoKeyTyped
-if(evt.getKeyChar() == KeyEvent.VK_TAB){
-  txtReceta.requestFocus();
-}        // TODO add your handling code here:
+        if (evt.getKeyChar() == KeyEvent.VK_TAB) {
+            txtReceta.requestFocus();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtDiagnosticoKeyTyped
 
     /**
@@ -437,27 +448,33 @@ if(evt.getKeyChar() == KeyEvent.VK_TAB){
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(AgregarDiagnostico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgregarDiagnostico.class.
+                getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(AgregarDiagnostico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgregarDiagnostico.class.
+                getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(AgregarDiagnostico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgregarDiagnostico.class.
+                getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(AgregarDiagnostico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AgregarDiagnostico.class.
+                getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                AgregarDiagnostico dialog = new AgregarDiagnostico(new javax.swing.JFrame(), true);
+                AgregarDiagnostico dialog = new AgregarDiagnostico(
+                    new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
