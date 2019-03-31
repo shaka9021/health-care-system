@@ -8,11 +8,13 @@ package gui;
 import repository.Conexion;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -282,9 +284,10 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
             String ID = (String) model.getValueAt(fila, 2);
             String Estado = (String) model.getValueAt(fila, 1);
             CharSequence Pendiente = "(Pendiente)";
-            if(!Estado.contains(Pendiente)){
-                JOptionPane.showMessageDialog(this, "Seleccione una cita PENDIENTE unicamente", "Seleccione",
-                        JOptionPane.ERROR_MESSAGE);
+            if (!Estado.contains(Pendiente)) {
+                JOptionPane.showMessageDialog(this,
+                    "Seleccione una cita PENDIENTE unicamente", "Seleccione",
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
             int ID_Cita = Integer.parseInt(ID);
@@ -294,12 +297,17 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
             try {
 
-                resultado = Conexion.consulta("Select Nombres_Med, Apellidos_Med, Nombres, Apellidos"
-                        + " from CitaV Where ID_Cita = " + ID_Cita);
+                List<List<String>> resultados = Conexion.runner().execute(
+                    "Select Nombres_Med, Apellidos_Med, Nombres, Apellidos"
+                    + " from CitaV Where ID_Cita = ?",
+                    rs -> Arrays.asList(rs.getString(1).trim() + " " + rs.
+                        getString(2).trim(), rs.getString(3).trim() + " " + rs.
+                        getString(4).trim()), ID_Cita);
 
-                while (resultado.next()) {
-                    Dr = resultado.getString(1).trim() + " " + resultado.getString(2).trim();
-                    Paciente = resultado.getString(3).trim() + " " + resultado.getString(4).trim();
+                for (List<String> resultado : resultados) {
+                    Iterator<String> iterator = resultado.iterator();
+                    Dr = iterator.next();
+                    Paciente = iterator.next();
                 }
 
             } catch (SQLException ex) {
@@ -316,8 +324,9 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
             AD.toFront();
 
         } else {
-            JOptionPane.showMessageDialog(this, "Seleccione la cita para agregar la consulta | diagnostico | receta | archivos al expediente",
-                    "Seleccione", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Seleccione la cita para agregar la consulta | diagnostico | receta | archivos al expediente",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
 
         }
 
@@ -327,32 +336,29 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
         Guardar();
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    ResultSet resultado;
-
     int ID_Medico = 0;
     boolean flag = false;
-    
-    public void CargarMedico(){
-        
-        try{
-            
-       resultado = Conexion.consulta("Select ID_Medico from Medico where ID_Usuario = " + 
-               Principal.INSTANCE.getID_Usuario());
-       
-       while(resultado.next()){
-           
-           ID_Medico = resultado.getInt(1);
-           System.out.println("ID "+ID_Medico);
-           
-       }
-    }catch(SQLException ex){}
+
+    public void CargarMedico() {
+
+        try {
+
+            ID_Medico = Conexion.runner().query(
+                "Select ID_Medico from Medico where ID_Usuario = ?",
+                rs -> rs.getInt(1),
+                Principal.INSTANCE.getID_Usuario());
+
+            System.out.println("ID " + ID_Medico);
+
+        } catch (SQLException ex) {
+        }
     }
-    
+
 
     private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameOpened
 
         CargarMedico();
-        
+
         Date Hoy = new Date();
 
         jCalendar1.setMinSelectableDate(Hoy);
@@ -381,7 +387,7 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
         jTable1.setColumnModel(columnModel);
 
-      //   jTable1.removeColumn(jTable1.getColumnModel().getColumn(2));
+        //   jTable1.removeColumn(jTable1.getColumnModel().getColumn(2));
         CargarHorario();
 // TODO add your handling code here:
     }//GEN-LAST:event_formInternalFrameOpened
@@ -399,7 +405,8 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
         Date hoy = new Date();
         jCalendar1.setDate(hoy);
 
-        String[] Horas = {"8:00 A.M", "9:00 A.M", "10:00 A.M", "11:00 A.M", "12:00 P.M", "1:00 P.M",
+        String[] Horas = {"8:00 A.M", "9:00 A.M", "10:00 A.M", "11:00 A.M",
+            "12:00 P.M", "1:00 P.M",
             "2:00 P.M", "3:00 P.M", "4:00 P.M", "5:00 P.M"};
 
         model.setRowCount(10);
@@ -424,9 +431,10 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
     public void CargarHorario() {
 
-                 this.jTable1.setEnabled(true);
-                 
-        String[] Horas = {"8:00 A.M", "9:00 A.M", "10:00 A.M", "11:00 A.M", "12:00 P.M", "1:00 P.M",
+        this.jTable1.setEnabled(true);
+
+        String[] Horas = {"8:00 A.M", "9:00 A.M", "10:00 A.M", "11:00 A.M",
+            "12:00 P.M", "1:00 P.M",
             "2:00 P.M", "3:00 P.M", "4:00 P.M", "5:00 P.M"};
 
         model.setRowCount(10);
@@ -455,20 +463,24 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
         ckV.setSelected(V);
         ckS.setSelected(S);
         ckD.setSelected(D);
-  
+
         ArrayList<String> Dias = new ArrayList<>();
         ArrayList<String> Hora_Inicial = new ArrayList<>();
         ArrayList<String> Hora_Final = new ArrayList<>();
 
         try {
 
-            resultado = Conexion.consulta("Select Dia, Hora_Inicial, Hora_Final"
-                    + " from Horario where ID_Medico = " + ID_Medico);
+            List<List<String>> resultados = Conexion.runner().execute(
+                "Select Dia, Hora_Inicial, Hora_Final from Horario where ID_Medico = ?",
+                rs -> Arrays.asList(rs.getString(1), rs.getString(2), rs.
+                    getString(3)),
+                ID_Medico);
 
-            while (resultado.next()) {
-                Dias.add(resultado.getString(1));
-                Hora_Inicial.add(resultado.getString(2));
-                Hora_Final.add(resultado.getString(3));
+            for (List<String> resultado : resultados) {
+                Iterator<String> iterator = resultado.iterator();
+                Dias.add(iterator.next());
+                Hora_Inicial.add(iterator.next());
+                Hora_Final.add(iterator.next());
             }
         } catch (SQLException ex) {
 
@@ -485,16 +497,23 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
             Date Fecha = jCalendar1.getDate();
             date = Fecha.getTime();
             java.sql.Date Fechac = new java.sql.Date(date);
-            resultado = Conexion.consulta("Select Hora_Cita, Estado, Nombres, Apellidos, ID_Cita"
-                    + " from CitaV where (ID_Medico = " + ID_Medico
-                    + ") and (Fecha_Cita = '" + Fechac + "')");
 
-            while (resultado.next()) {
-                Hrs.add(resultado.getString(1));
-                Estados.add(resultado.getString(2));
-                Pacientes.add(resultado.getString(3).trim() + " " + resultado.getString(4).trim());
-                Citas.add(String.valueOf(resultado.getInt(5)));
+            List<List<String>> resultados = Conexion.runner().execute(
+                "Select Hora_Cita, Estado, Nombres, Apellidos, ID_Cita "
+                + "from CitaV where (ID_Medico = ?) and (Fecha_Cita = ?)",
+                rs -> Arrays.asList(rs.getString(1), rs.getString(2),
+                    rs.getString(3).trim() + " " + rs.getString(4).trim(),
+                    rs.getString(5)),
+                ID_Medico, Fechac);
+
+            for (List<String> resultado : resultados) {
+                Iterator<String> iterator = resultado.iterator();
+                Hrs.add(iterator.next());
+                Estados.add(iterator.next());
+                Pacientes.add(iterator.next());
+                Citas.add(iterator.next());
             }
+
         } catch (SQLException ex) {
 
         }
@@ -540,32 +559,30 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
             default:
                 break;
         }
-        
-       int item = 0;
-       
-       if(Dias.contains(Day)){
-           
-           item = Dias.indexOf(Day);
-           
-       }
-       else{
-           
-           for(int r=0; r<jTable1.getRowCount();r++){
-               jTable1.setValueAt("No Disponible", r, 1);
-           }
-           
-             this.jTable1.setEnabled(false);
+
+        int item = 0;
+
+        if (Dias.contains(Day)) {
+
+            item = Dias.indexOf(Day);
+
+        } else {
+
+            for (int r = 0; r < jTable1.getRowCount(); r++) {
+                jTable1.setValueAt("No Disponible", r, 1);
+            }
+
+            this.jTable1.setEnabled(false);
             jTable1.setDefaultRenderer(Object.class, new MiRenderDisable());
             return;
-       }
+        }
 
         int Horai = 0;
         int Horaf = 0;
 
         HoraInicio = Hora_Inicial.get(item);
         HoraFinal = Hora_Final.get(item);
-        
-        
+
         for (int r = 0; r < 10; r++) {
 
             String HRM = (String) model.getValueAt(r, 0);
@@ -606,8 +623,8 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
                     if (Hrs.get(p).equalsIgnoreCase(HRM)) {
 
-                        model.setValueAt(" Cita con " + Pacientes.get(p) + 
-                                " (" + Estados.get(p).trim() +")", q, 1);
+                        model.setValueAt(" Cita con " + Pacientes.get(p) + " ("
+                            + Estados.get(p).trim() + ")", q, 1);
                         model.setValueAt(Citas.get(p), q, 2);
 
                     }
@@ -616,31 +633,31 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
             }
 
         }
-        
-         for (String Dia1 : Dias) {
-            
-            if(Dia1.equalsIgnoreCase("L")){
-                L=true;
+
+        for (String Dia1 : Dias) {
+
+            if (Dia1.equalsIgnoreCase("L")) {
+                L = true;
             }
-            if(Dia1.equalsIgnoreCase("M")){
-                M=true;
+            if (Dia1.equalsIgnoreCase("M")) {
+                M = true;
             }
-            if(Dia1.equalsIgnoreCase("X")){
-                X=true;
+            if (Dia1.equalsIgnoreCase("X")) {
+                X = true;
             }
-            if(Dia1.equalsIgnoreCase("J")){
-                J=true;
+            if (Dia1.equalsIgnoreCase("J")) {
+                J = true;
             }
-            if(Dia1.equalsIgnoreCase("V")){
-                V=true;
+            if (Dia1.equalsIgnoreCase("V")) {
+                V = true;
             }
-            if(Dia1.equalsIgnoreCase("S")){
-                S=true;
+            if (Dia1.equalsIgnoreCase("S")) {
+                S = true;
             }
-            if(Dia1.equalsIgnoreCase("D")){
-                D=true;
+            if (Dia1.equalsIgnoreCase("D")) {
+                D = true;
             }
-            
+
         }
 
         ckL.setSelected(L);
@@ -672,50 +689,63 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
         if (!ckD.isSelected() && Dia == 1) {
             this.jTable1.setEnabled(false);
             jTable1.setDefaultRenderer(Object.class, new MiRenderDisable());
-            JOptionPane.showMessageDialog(this, "Dia Domingo no disponible en horario del medico", "No disponible",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Dia Domingo no disponible en horario del medico",
+                "No disponible",
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (!ckL.isSelected() && Dia == 2) {
             this.jTable1.setEnabled(false);
             jTable1.setDefaultRenderer(Object.class, new MiRenderDisable());
-            JOptionPane.showMessageDialog(this, "Dia Lunes no disponible en horario del medico", "No disponible",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Dia Lunes no disponible en horario del medico", "No disponible",
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (!ckM.isSelected() && Dia == 3) {
             this.jTable1.setEnabled(false);
             jTable1.setDefaultRenderer(Object.class, new MiRenderDisable());
-            JOptionPane.showMessageDialog(this, "Dia Martes no disponible en horario del medico", "No disponible",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Dia Martes no disponible en horario del medico",
+                "No disponible",
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (!ckX.isSelected() && Dia == 4) {
             this.jTable1.setEnabled(false);
             jTable1.setDefaultRenderer(Object.class, new MiRenderDisable());
-            JOptionPane.showMessageDialog(this, "Dia Miercoles no disponible en horario del medico", "No disponible",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Dia Miercoles no disponible en horario del medico",
+                "No disponible",
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (!ckJ.isSelected() && Dia == 5) {
             this.jTable1.setEnabled(false);
             jTable1.setDefaultRenderer(Object.class, new MiRenderDisable());
-            JOptionPane.showMessageDialog(this, "Dia Jueves no disponible en horario del medico", "No disponible",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Dia Jueves no disponible en horario del medico",
+                "No disponible",
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (!ckV.isSelected() && Dia == 6) {
             this.jTable1.setEnabled(false);
             jTable1.setDefaultRenderer(Object.class, new MiRenderDisable());
-            JOptionPane.showMessageDialog(this, "Dia Viernes no disponible en horario del medico", "No disponible",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Dia Viernes no disponible en horario del medico",
+                "No disponible",
+                JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (!ckS.isSelected() && Dia == 7) {
             this.jTable1.setEnabled(false);
             jTable1.setDefaultRenderer(Object.class, new MiRenderDisable());
-            JOptionPane.showMessageDialog(this, "Dia Sabado no disponible en horario del medico", "No disponible",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Dia Sabado no disponible en horario del medico",
+                "No disponible",
+                JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -743,21 +773,21 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean hasFocus,
-                int row,
-                int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-           
-            
+            Object value,
+            boolean isSelected,
+            boolean hasFocus,
+            int row,
+            int column) {
+            super.getTableCellRendererComponent(table, value, isSelected,
+                hasFocus, row, column);
+
             CharSequence Libre = " Libre";
             CharSequence Atendida = "(Atendida)";
             CharSequence Cancelada = "(Cancelada)";
             CharSequence Pendiente = "(Pendiente)";
-            
+
             String Valor = (String) value;
-            
+
             if (column == 1 && Valor.contains(Libre)) {
                 this.setBackground(new Color(27, 94, 32)); //Verde
                 this.setForeground(Color.WHITE);
@@ -793,12 +823,13 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean hasFocus,
-                int row,
-                int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            Object value,
+            boolean isSelected,
+            boolean hasFocus,
+            int row,
+            int column) {
+            super.getTableCellRendererComponent(table, value, isSelected,
+                hasFocus, row, column);
 
             this.setBackground(Color.GRAY);
             this.setForeground(Color.BLACK);

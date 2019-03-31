@@ -1,6 +1,8 @@
 package repository;
 
 import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.apache.commons.dbutils.QueryRunner;
 
 public class Conexion {
@@ -11,8 +13,8 @@ public class Conexion {
     static {
         DATASOURCE = new HikariDataSource();
         DATASOURCE.setJdbcUrl("jdbc:mysql://localhost/medical_record?"
-                + "useUnicode=true&useJDBCCompliantTimezoneShift=true&"
-                + "useLegacyDatetimeCode=false&serverTimezone=UTC");
+            + "useUnicode=true&useJDBCCompliantTimezoneShift=true&"
+            + "useLegacyDatetimeCode=false&serverTimezone=UTC");
         DATASOURCE.setUsername("root");
         DATASOURCE.setPassword("2535818");
         RUNNER = new QueryRunner(DATASOURCE);
@@ -22,4 +24,7 @@ public class Conexion {
         return RUNNER;
     }
 
+    public static Connection connection() throws SQLException {
+        return DATASOURCE.getConnection();
+    }
 }
