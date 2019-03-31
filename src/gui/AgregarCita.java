@@ -469,8 +469,9 @@ public class AgregarCita extends javax.swing.JInternalFrame {
         } catch (SQLException ex) {
         }
 
-        ID_Esp = new int[ID_Especialidad];
-        int i = 0;
+        ID_Esp = new int[ID_Especialidad + 1];
+        ID_Esp[0] = 0;
+        int i = 1;
 
         try {
 
@@ -515,8 +516,9 @@ public class AgregarCita extends javax.swing.JInternalFrame {
         }
 
 
-        ID_Pac = new int[ID_Paciente];
-        int j = 0;
+        ID_Pac = new int[ID_Paciente + 1];
+        ID_Pac[0] = 0;
+        int j = 1;
 
         try {
 
@@ -566,8 +568,9 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
         }
 
-        ID_Med = new int[ID_Medico];
-        j = 0;
+        ID_Med = new int[ID_Medico + 1];
+        ID_Med[0] = 0;
+        j = 1;
 
         try {
 
