@@ -8,8 +8,9 @@ package gui;
 import repository.Conexion;
 import repository.Especialidad;
 import java.awt.Toolkit;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Iterator;
 import javax.swing.JOptionPane;
 
 /**
@@ -21,43 +22,44 @@ public class ModificarEspecialidad extends javax.swing.JDialog {
     /**
      * Creates new form AgregarDoctor
      */
-    public ModificarEspecialidad (java.awt.Frame parent, boolean modal) {
+    public ModificarEspecialidad(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         this.setLocationRelativeTo(null);
         this.setResizable(false);
     }
-    
-    ResultSet resultado;
+
     int IDD;
-    
+
     private VerEspecialidad VE;
 
     public void setVE(VerEspecialidad VE) {
         this.VE = VE;
     }
-    
-    public void CargarDatos(int ID){
-        
-        String Nombre="";
-        String Descripcion="";
-        
-        try{
-            
-            resultado = Conexion.consulta("Select * from Especialidad Where ID_Especialidad = "+ID);
-            
-            while(resultado.next()){
-             IDD = resultado.getInt(1);
-             Nombre = resultado.getString(2);
-             Descripcion = resultado.getString(3);
-                
-            }
-            
-        }catch(SQLException ex){}
-        
+
+    public void CargarDatos(int ID) {
+
+        String Nombre = "";
+        String Descripcion = "";
+
+        try {
+
+            Iterator<String> resultado = Conexion.runner().query(
+                "Select * from Especialidad Where ID_Especialidad = ?",
+                rs -> rs.next()? Arrays.asList(String.valueOf(rs.getInt(1)),
+                    rs.getString(2), rs.getString(3)).iterator() : null,
+                 ID);
+
+            IDD = Integer.parseInt(resultado.next());
+            Nombre = resultado.next();
+            Descripcion = resultado.next();
+
+        } catch (Exception ex) {
+        }
+
         txtNombre.setText(Nombre);
         txtDescripcion.setText(Descripcion);
-        
+
     }
 
     /**
@@ -171,44 +173,42 @@ public class ModificarEspecialidad extends javax.swing.JDialog {
         setBounds(0, 0, 552, 395);
     }// </editor-fold>//GEN-END:initComponents
 
-    public void Guardar(){
+    public void Guardar() {
         String Nombre = txtNombre.getText().trim();
         String Descripcion = txtDescripcion.getText().trim();
-        
-        if("".equals(Nombre)||"".equals(Descripcion)){
-                 JOptionPane.showMessageDialog
-        (this, "Complete todos los campos","Complete",JOptionPane.ERROR_MESSAGE);
-         
-        }
-        else{
+
+        if ("".equals(Nombre) || "".equals(Descripcion)) {
+            JOptionPane.showMessageDialog(this, "Complete todos los campos",
+                "Complete", JOptionPane.ERROR_MESSAGE);
+
+        } else {
             Especialidad.Actualizar_Especialidad(IDD, Nombre, Descripcion);
             Limpiar();
         }
     }
-    
-    public void Limpiar(){
+
+    public void Limpiar() {
         VE.CargarDatos();
         dispose();
     }
-    
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-Guardar(); 
+        Guardar();
 // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-Limpiar();      // TODO add your handling code here:
+        Limpiar();      // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void txtNombreKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreKeyTyped
-char a = evt.getKeyChar();
+        char a = evt.getKeyChar();
 
-if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
-    evt.consume();
-    Toolkit.getDefaultToolkit().beep();
-}        // TODO add your handling code here:
+        if (!Character.isLetter(a) && !Character.isISOControl(a) && a != ' ') {
+            evt.consume();
+            Toolkit.getDefaultToolkit().beep();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtNombreKeyTyped
-
 
     /**
      * @param args the command line arguments
@@ -220,20 +220,25 @@ if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -241,7 +246,8 @@ if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ModificarEspecialidad dialog = new ModificarEspecialidad(new javax.swing.JFrame(), true);
+                ModificarEspecialidad dialog = new ModificarEspecialidad(
+                    new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -252,7 +258,7 @@ if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
             }
         });
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;

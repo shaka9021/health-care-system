@@ -268,7 +268,8 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
         try {
 
             ID_PMax = Conexion.runner().query(
-                "Select Max(ID_Pago) from Pago", rs -> rs.getInt(1));
+                "Select Max(ID_Pago) from Pago", rs -> rs.next() ? rs.getInt(1)
+                : 0);
 
         } catch (SQLException ex) {
         }
@@ -307,7 +308,8 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
         try {
 
             ID_ServicioMax = Conexion.runner().query(
-                "Select Max(ID_Servicio) from Servicio", rs -> rs.getInt(1));
+                "Select Max(ID_Servicio) from Servicio", rs -> rs.next() ? rs.
+                getInt(1) : 0);
 
         } catch (SQLException ex) {
 
@@ -323,9 +325,21 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select ID_Servicio, Nombre_Servicio from Servicio Where Estado = ?",
-                rs -> Arrays.asList(rs.getString(1), rs.getString(2).trim()),
+                rs -> {
+
+                List<List<String>> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    r.
+                        add(Arrays.asList(rs.getString(1), rs.getString(2).
+                            trim()));
+                }
+
+                return r;
+
+            },
                 1);
 
             for (List<String> resultado : resultados) {
@@ -342,8 +356,9 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
         try {
 
             ID_Paciente = Conexion.runner().query(
-                "Select Max(ID_Paciente) from Paciente", rs -> rs.getInt(
-                    1));
+                "Select Max(ID_Paciente) from Paciente", rs -> rs.next() ? rs.
+                getInt(
+                    1) : 0);
 
         } catch (SQLException ex) {
         }
@@ -358,10 +373,20 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select ID_Paciente, Nombres, Apellidos from Paciente Where Estado = ?",
-                rs -> Arrays.asList(rs.getString(1),
-                    rs.getString(2).trim() + " " + rs.getString(3).trim()),
+                rs -> {
+
+                List<List<String>> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    r.add(Arrays.asList(rs.getString(1),
+                        rs.getString(2).trim() + " " + rs.getString(3).trim()));
+                }
+
+                return r;
+
+            },
                 1);
 
             for (List<String> resultado : resultados) {
@@ -378,7 +403,8 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
         try {
 
             ID_Medico = Conexion.runner().query(
-                "Select Max(ID_Medico) from Medico", rs -> rs.getInt(1));
+                "Select Max(ID_Medico) from Medico", rs -> rs.next() ? rs.
+                getInt(1) : 0);
 
         } catch (SQLException ex) {
 
@@ -394,11 +420,21 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select ID_Medico, Nombres, Apellidos from Medico  Where Estado = ?",
-                rs -> Arrays.asList(rs.getString(1), rs.getString(2).trim()
-                    + " "
-                    + rs.getString(3).trim()),
+                rs -> {
+
+                List<List<String>> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    r.add(Arrays.asList(rs.getString(1), rs.getString(2).trim()
+                        + " "
+                        + rs.getString(3).trim()));
+                }
+
+                return r;
+
+            },
                 1);
 
             for (List<String> resultado : resultados) {
@@ -472,11 +508,25 @@ public class AgregarFactura extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select Nombre_Servicio, Descripcion_Servicio, Precio_Servicio "
                 + "from Servicio where ID_Servicio = ?",
-                rs -> Arrays.asList(rs.getString(1), rs.getString(2),
-                    String.valueOf(rs.getDouble(3))),
+                rs -> {
+
+                List<List<String>> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    r.add(
+                        Arrays.asList(
+                            rs.getString(1), rs.getString(2), String.valueOf(rs.
+                            getDouble(3))
+                        )
+                    );
+                }
+
+                return r;
+
+            },
                 ID_Servicio);
 
             for (List<String> resultado : resultados) {

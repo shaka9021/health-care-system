@@ -8,10 +8,11 @@ package gui;
 import repository.Conexion;
 import repository.Pago;
 import java.awt.event.MouseEvent;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
@@ -155,40 +156,37 @@ public class VerPago extends javax.swing.JInternalFrame {
         setBounds(0, 0, 705, 510);
     }// </editor-fold>//GEN-END:initComponents
 
-    
-    public void ActDes(){
-        
-           
-int Fila = jTable1.getSelectedRow();
-int Col = 5;
+    public void ActDes() {
 
-     //   System.out.println("Fila "+Fila);
+        int Fila = jTable1.getSelectedRow();
+        int Col = 5;
 
-if(Fila >= 0){
-  
-    int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
-    String Estado = model.getValueAt(Fila, Col).toString();
-    
-    if(Estado.equalsIgnoreCase("Activo")){
-        Pago.Cancelar_Pago(ID); //Des  
-    }
-    else{
-        JOptionPane.showMessageDialog(this, "Ya ha cancelado este pago anteriormente", 
-            "Cancelado", JOptionPane.ERROR_MESSAGE);   
+        //   System.out.println("Fila "+Fila);
+        if (Fila >= 0) {
+
+            int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
+            String Estado = model.getValueAt(Fila, Col).toString();
+
+            if (Estado.equalsIgnoreCase("Activo")) {
+                Pago.Cancelar_Pago(ID); //Des  
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "Ya ha cancelado este pago anteriormente",
+                    "Cancelado", JOptionPane.ERROR_MESSAGE);
+            }
+
+            CargarDatos();
+
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar el pago a cancelar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    CargarDatos();
-    
-}
-else{
-    JOptionPane.showMessageDialog(this, "Debe seleccionar el pago a cancelar", 
-            "Seleccione", JOptionPane.ERROR_MESSAGE);  
-} 
-    }
-  
-    
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-ActDes();
+        ActDes();
 // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -196,38 +194,47 @@ ActDes();
         this.dispose();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    ResultSet resultado;
-    
-    public void CargarDatos(){
-                model.setRowCount(0);
-         
-        String[] Header = {"No.", "Fecha", "Cliente", "Usuario", "Total", "Estado"};
-        model.setColumnIdentifiers(Header);
+    public void CargarDatos() {
+        model.setRowCount(0);
 
-        String[] Datos = new String[6];
+        String[] Header = {"No.", "Fecha", "Cliente", "Usuario", "Total",
+            "Estado"};
+        model.setColumnIdentifiers(Header);
 
         try {
 
-            resultado = Conexion.consulta("Select * from PagoV");
+            Conexion.runner().query(
+                "Select * from PagoV",
+                rs -> {
 
-            while (resultado.next()) {
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
-                Date Fecha = resultado.getDate(2);
-                Datos[1] = SDF.format(Fecha);
-                String Cliente = resultado.getString(3).trim() + " " + resultado.getString(4).trim();
-                Datos[2] = Cliente;
-                Datos[3] = resultado.getString(5);
-                Datos[4] = String.valueOf(resultado.getDouble(6));
-                boolean Estado = resultado.getBoolean(7);
-                String Estate = "Cancelado";
-                if (Estado) {
-                    Estate = "Activo";
+                List<String[]> r = new ArrayList<>();
+
+                while (rs.next()) {
+
+                    String[] Datos = new String[6];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
+                    Date Fecha = rs.getDate(2);
+                    Datos[1] = SDF.format(Fecha);
+                    String Cliente = rs.getString(3).trim() + " " + rs.
+                        getString(4).
+                        trim();
+                    Datos[2] = Cliente;
+                    Datos[3] = rs.getString(5);
+                    Datos[4] = String.valueOf(rs.getDouble(6));
+                    boolean Estado = rs.getBoolean(7);
+                    String Estate = "Cancelado";
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[5] = Estate;
+
+                    r.add(Datos);
                 }
-                Datos[5] = Estate;
 
-                model.addRow(Datos);
-            }
+                return r;
+            }).stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
@@ -238,74 +245,88 @@ ActDes();
 
     private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameOpened
 
-CargarDatos();
+        CargarDatos();
 
 // TODO add your handling code here:
     }//GEN-LAST:event_formInternalFrameOpened
 
     private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
 
-int Fila = jTable1.getSelectedRow();
+        int Fila = jTable1.getSelectedRow();
 
-if(Fila >= 0){
-  
-    int ID_Pago = Integer.parseInt(model.getValueAt(Fila, 0).toString());
-    
-    if(evt.getClickCount()==2 && evt.getButton()==MouseEvent.BUTTON1){
-        
-        VerDetallePago VP = new VerDetallePago(null, true);
-        VP.CargarDatos(ID_Pago);
-        VP.setVisible(true);
-        
-    }
-    
-}        // TODO add your handling code here:
+        if (Fila >= 0) {
+
+            int ID_Pago = Integer.parseInt(model.getValueAt(Fila, 0).toString());
+
+            if (evt.getClickCount() == 2 && evt.getButton()
+                == MouseEvent.BUTTON1) {
+
+                VerDetallePago VP = new VerDetallePago(null, true);
+                VP.CargarDatos(ID_Pago);
+                VP.setVisible(true);
+
+            }
+
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_jTable1MouseClicked
 
-    public void Buscar(){
+    public void Buscar() {
         String Buscar = txtBuscar.getText();
-        
-               model.setRowCount(0);
-         
-        String[] Header = {"No.", "Fecha", "Cliente", "Usuario", "Total", "Estado"};
-        model.setColumnIdentifiers(Header);
 
-        String[] Datos = new String[6];
+        model.setRowCount(0);
+
+        String[] Header = {"No.", "Fecha", "Cliente", "Usuario", "Total",
+            "Estado"};
+        model.setColumnIdentifiers(Header);
 
         try {
 
-            resultado = Conexion.consulta("Select * from PagoV where Nombres like '%"+Buscar+"%' "
-                    + "or Apellidos like '%"+Buscar+"%'");
+            Conexion.runner().query(
+                "Select * from PagoV where Nombres like ? "
+                + "or Apellidos like ?",
+                rs -> {
 
-            while (resultado.next()) {
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
-                Date Fecha = resultado.getDate(2);
-                Datos[1] = SDF.format(Fecha);
-                String Cliente = resultado.getString(3).trim() + " " + resultado.getString(4).trim();
-                Datos[2] = Cliente;
-                Datos[3] = resultado.getString(5);
-                Datos[4] = String.valueOf(resultado.getDouble(6));
-                boolean Estado = resultado.getBoolean(7);
-                String Estate = "Cancelado";
-                if (Estado) {
-                    Estate = "Activo";
+                List<String[]> r = new ArrayList<>();
+
+                while (rs.next()) {
+
+                    String[] Datos = new String[6];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
+                    Date Fecha = rs.getDate(2);
+                    Datos[1] = SDF.format(Fecha);
+                    String Cliente = rs.getString(3).trim() + " " + rs.
+                        getString(4).
+                        trim();
+                    Datos[2] = Cliente;
+                    Datos[3] = rs.getString(5);
+                    Datos[4] = String.valueOf(rs.getDouble(6));
+                    boolean Estado = rs.getBoolean(7);
+                    String Estate = "Cancelado";
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[5] = Estate;
+
+                    r.add(Datos);
                 }
-                Datos[5] = Estate;
 
-                model.addRow(Datos);
-            }
+                return r;
+
+            }, "%" + Buscar + "%", "%" + Buscar + "%")
+                .stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
         }
 
         jTable1.setModel(model);
-        
+
     }
-    
+
     private void txtBuscarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyReleased
-Buscar();        // TODO add your handling code here:
+        Buscar();        // TODO add your handling code here:
     }//GEN-LAST:event_txtBuscarKeyReleased
 
     DefaultTableModel model = new DefaultTableModel() {

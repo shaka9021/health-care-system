@@ -8,6 +8,7 @@ package gui;
 import repository.Conexion;
 import java.awt.Toolkit;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -197,8 +198,9 @@ public class AgregarMedico extends javax.swing.JInternalFrame {
         try {
 
             ID_Especialidad = Conexion.runner().query(
-                "Select Max(ID_Especialidad) from Especialidad", rs -> rs.
-                    getInt(1));
+                "Select Max(ID_Especialidad) from Especialidad", rs -> rs.next()
+                ? rs.
+                    getInt(1) : 0);
 
         } catch (SQLException ex) {
 
@@ -214,10 +216,19 @@ public class AgregarMedico extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select ID_Especialidad, Nombre from Especialidad Where Estado = ?",
-                rs -> Arrays.asList(String.valueOf(rs.getInt(1)), rs.
-                    getString(2).trim()),
+                rs -> {
+
+                List<List<String>> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    r.add(Arrays.asList(String.valueOf(rs.getInt(1)), rs.
+                        getString(2).trim()));
+                }
+
+                return r;
+            },
                 1);
 
             for (List<String> resultado : resultados) {

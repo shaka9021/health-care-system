@@ -6,14 +6,14 @@
 package gui;
 
 import repository.Conexion;
-import repository.Medico;
 import repository.Paciente;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import java.util.Arrays;
 
 /**
  *
@@ -24,7 +24,7 @@ public class ModificarPaciente extends javax.swing.JDialog {
     /**
      * Creates new form AgregarDoctor
      */
-    public ModificarPaciente (java.awt.Frame parent, boolean modal) {
+    public ModificarPaciente(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         this.setLocationRelativeTo(null);
@@ -269,8 +269,8 @@ public class ModificarPaciente extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     int IDD;
-    
-    public void CargarDatos(int ID){
+
+    public void CargarDatos(int ID) {
         String Nombre = "";
         String Apellido = "";
         String Peso = "";
@@ -280,28 +280,38 @@ public class ModificarPaciente extends javax.swing.JDialog {
         String Alergia = "";
         String Enfermedades = "";
         String TipoSangre = "";
-        
-        try{
-            
-            resultado = Conexion.consulta("Select * from Paciente where ID_Paciente = "+ID);
-            
-            while(resultado.next()){
-                IDD = resultado.getInt(1);
-                Nombre = resultado.getString(2);
-                Apellido = resultado.getString(3);
-                Peso = String.valueOf(resultado.getFloat(4));
-                Altura = String.valueOf(resultado.getFloat(5));
-                Edad = String.valueOf(resultado.getInt(6));
-                Telefono = resultado.getString(7);
-                Alergia = resultado.getString(8);
-                Enfermedades = resultado.getString(9);
-                TipoSangre = resultado.getString(10);
-                
-            }
-                    
-            
-        }catch(SQLException ex){}
-        
+
+        try {
+
+            Iterator<String> resultado = Conexion.runner().query(
+                "Select * from Paciente where ID_Paciente = ?",
+                rs -> rs.next()? Arrays.asList(
+                    String.valueOf(rs.getInt(1)),
+                    rs.getString(2),
+                    rs.getString(3),
+                    String.valueOf(rs.getFloat(4)),
+                    String.valueOf(rs.getFloat(5)),
+                    String.valueOf(rs.getInt(6)),
+                    rs.getString(7),
+                    rs.getString(8),
+                    rs.getString(9),
+                    rs.getString(10)).iterator() : null,
+                ID);
+
+            IDD = Integer.parseInt(resultado.next());
+            Nombre = resultado.next();
+            Apellido = resultado.next();
+            Peso = resultado.next();
+            Altura = resultado.next();
+            Edad = resultado.next();
+            Telefono = resultado.next();
+            Alergia = resultado.next();
+            Enfermedades = resultado.next();
+            TipoSangre = resultado.next();
+
+        } catch (Exception ex) {
+        }
+
         txtAlergia.setText(Alergia);
         txtAltura.setText(Altura);
         txtApellido.setText(Apellido);
@@ -310,13 +320,12 @@ public class ModificarPaciente extends javax.swing.JDialog {
         txtNombre.setText(Nombre);
         txtPeso.setText(Peso);
         txtTelefono.setText(Telefono);
-        
+
         cmbSangre.setSelectedItem(TipoSangre);
-        
+
     }
-    
-    
-    public void Guardar(){
+
+    public void Guardar() {
         String Nombre = txtNombre.getText().trim();
         String Apellido = txtApellido.getText().trim();
         String PesoF = txtPeso.getText().trim();
@@ -329,128 +338,125 @@ public class ModificarPaciente extends javax.swing.JDialog {
         String Alergias = txtAlergia.getText().trim();
         String Enfermedades = txtEnfermedad.getText().trim();
         String Telefono = txtTelefono.getText().trim();
-        
-        if("".equals(Nombre)||"".equals(Apellido)||"<Seleccione>".equals(TipoSangre)||
-                "".equals(PesoF)||"".equals(AlturaF)||"".equals(EdadF)||"".equals(Alergias)||"".equals(Enfermedades)){
-                    JOptionPane.showMessageDialog
-        (this, "Complete todos los campos y seleccione correctamente",
-                "Complete",JOptionPane.ERROR_MESSAGE);
-        }
-        else{
-            Paciente.Actualizar_Paciente(IDD,Nombre, Apellido, Peso, Altura, Edad, Alergias, Enfermedades, TipoSangre, Telefono);
+
+        if ("".equals(Nombre) || "".equals(Apellido) || "<Seleccione>".equals(
+            TipoSangre) || "".equals(PesoF) || "".equals(AlturaF) || "".equals(
+            EdadF) || "".equals(Alergias) || "".equals(Enfermedades)) {
+            JOptionPane.showMessageDialog(this,
+                "Complete todos los campos y seleccione correctamente",
+                "Complete", JOptionPane.ERROR_MESSAGE);
+        } else {
+            Paciente.Actualizar_Paciente(IDD, Nombre, Apellido, Peso, Altura,
+                Edad, Alergias, Enfermedades, TipoSangre, Telefono);
             Limpiar();// TODO add your handling code here:
 
-            }
-        
+        }
+
     }
-    
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-Guardar(); 
+        Guardar();
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    ResultSet resultado;
-    int ID_Esp [];
-    
-    public void Limpiar(){
-     VP.CargarDatos();
-     this.dispose();
-        
+    int ID_Esp[];
+
+    public void Limpiar() {
+        VP.CargarDatos();
+        this.dispose();
+
     }
-    
-    
+
     private VerPaciente VP;
 
     public void setVP(VerPaciente VP) {
         this.VP = VP;
     }
-    
+
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-Limpiar();        // TODO add your handling code here:
+        Limpiar();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void txtAlergiaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtAlergiaKeyTyped
-if(evt.getKeyChar() == KeyEvent.VK_TAB){
-  txtEnfermedad.requestFocus();
-}// TODO add your handling code here:
+        if (evt.getKeyChar() == KeyEvent.VK_TAB) {
+            txtEnfermedad.requestFocus();
+        }// TODO add your handling code here:
     }//GEN-LAST:event_txtAlergiaKeyTyped
 
     private void txtNombreKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreKeyTyped
-char a = evt.getKeyChar();
+        char a = evt.getKeyChar();
 
-if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
-    evt.consume();
-    Toolkit.getDefaultToolkit().beep();
-}        // TODO add your handling code here:
+        if (!Character.isLetter(a) && !Character.isISOControl(a) && a != ' ') {
+            evt.consume();
+            Toolkit.getDefaultToolkit().beep();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtNombreKeyTyped
 
-    
-      public void ValidarDinero(java.awt.event.KeyEvent evt, JTextField txtPrecio) {
-        
+    public void ValidarDinero(java.awt.event.KeyEvent evt, JTextField txtPrecio) {
+
         char a = evt.getKeyChar();
-        
+
         if (!Character.isDigit(a) && !Character.isISOControl(a) && a != '.') {
             Toolkit.getDefaultToolkit().beep();
             evt.consume();
             return;
         }
-        
-        if ("0".equals(txtPrecio.getText()) && txtPrecio.getCaretPosition() == 1 && a != '.' && !Character.isISOControl(a)) {
+
+        if ("0".equals(txtPrecio.getText()) && txtPrecio.getCaretPosition() == 1
+            && a != '.' && !Character.isISOControl(a)) {
             txtPrecio.setText(txtPrecio.getText() + ".");
 //        return;
         }
-        
+
         if (a == '.' && txtPrecio.getText().contains(".")) {
             Toolkit.getDefaultToolkit().beep();
             evt.consume();
             return;
         }
-        
+
         String x1 = "";
-        if (Character.isDigit(a) || (Character.isISOControl(a) && !"".equals(txtPrecio.getText()))) {
+        if (Character.isDigit(a) || (Character.isISOControl(a) && !"".equals(
+            txtPrecio.getText()))) {
             x1 = txtPrecio.getText();
         }
         if (Character.isDigit(a) || (a == '.')) {
             x1 = txtPrecio.getText().concat(String.valueOf(a));
         }
-        
+
         if (!"".equals(x1)) {
-            
+
             try {
-                
+
                 Double x = Double.parseDouble(x1);
-                
+
                 if (x > Double.MAX_VALUE) {
                     Toolkit.getDefaultToolkit().beep();
                     evt.consume();
                 }
-                
+
             } catch (NumberFormatException ex) {
                 Toolkit.getDefaultToolkit().beep();
                 evt.consume();
             }
         }
-        
-    }
-    
-    private void txtApellidoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtApellidoKeyTyped
-char a = evt.getKeyChar();
 
-if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
-    evt.consume();
-    Toolkit.getDefaultToolkit().beep();
-}        // TODO add your handling code here:
+    }
+
+    private void txtApellidoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtApellidoKeyTyped
+        char a = evt.getKeyChar();
+
+        if (!Character.isLetter(a) && !Character.isISOControl(a) && a != ' ') {
+            evt.consume();
+            Toolkit.getDefaultToolkit().beep();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtApellidoKeyTyped
 
     private void txtPesoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPesoKeyTyped
-  ValidarDinero(evt, txtPeso);             // TODO add your handling code here:
+        ValidarDinero(evt, txtPeso);             // TODO add your handling code here:
     }//GEN-LAST:event_txtPesoKeyTyped
 
     private void txtAlturaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtAlturaKeyTyped
-  ValidarDinero(evt, txtAltura);             // TODO add your handling code here:
+        ValidarDinero(evt, txtAltura);             // TODO add your handling code here:
     }//GEN-LAST:event_txtAlturaKeyTyped
-
-    
-    
 
     /**
      * @param args the command line arguments
@@ -462,20 +468,25 @@ if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -483,7 +494,8 @@ if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ModificarPaciente dialog = new ModificarPaciente(new javax.swing.JFrame(), true);
+                ModificarPaciente dialog = new ModificarPaciente(
+                    new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -495,7 +507,7 @@ if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
         });
     }
 
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cmbSangre;
     private javax.swing.JButton jButton2;

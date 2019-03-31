@@ -402,7 +402,7 @@ Create Procedure Desactivar_Paciente(
 IN ID int
 )
 Update Paciente
-Set Estado = falseDetalle_Pago
+Set Estado = false
 Where ID_Paciente = ID;
 
 Create Procedure Cancelar_Pago(

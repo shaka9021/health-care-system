@@ -6,10 +6,10 @@
 package gui;
 
 import repository.Conexion;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+import java.util.*;
 
 /**
  *
@@ -81,38 +81,44 @@ public class VerDetallePago extends javax.swing.JDialog {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    ResultSet resultado;
-
     public void CargarDatos(int ID_Pago) {
 
-        String[] Header = {"Codigo", "No.", "Servicio", "Precio", "Cantidad", "Total", "Estado"};
+        String[] Header = {"Codigo", "No.", "Servicio", "Precio", "Cantidad",
+            "Total", "Estado"};
         model.setColumnIdentifiers(Header);
         this.jTable1.setModel(model);
 
-        String[] Datos = new String[7];
-
         try {
 
-            resultado = Conexion.consulta("Select * from Detalle_PagoV "
-                    + "Where ID_Pago = " + ID_Pago);
+            Conexion.runner().query(
+                "Select * from Detalle_PagoV "
+                + "Where ID_Pago = ?",
+                rs -> {
 
-            while (resultado.next()) {
+                List<String[]> r = new ArrayList<>();
 
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                Datos[1] = String.valueOf(resultado.getInt(2));
-                Datos[2] = resultado.getString(3);
-                Datos[3] = String.valueOf(resultado.getDouble(4));
-                Datos[4] = String.valueOf(resultado.getInt(5));
-                Datos[5] = String.valueOf(resultado.getDouble(6));
-                boolean Estado = resultado.getBoolean(7);
-                String Estate = "Cancelado";
-                if (Estado) {
-                    Estate = "Activo";
+                while (rs.next()) {
+
+                    String[] Datos = new String[7];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    Datos[1] = String.valueOf(rs.getInt(2));
+                    Datos[2] = rs.getString(3);
+                    Datos[3] = String.valueOf(rs.getDouble(4));
+                    Datos[4] = String.valueOf(rs.getInt(5));
+                    Datos[5] = String.valueOf(rs.getDouble(6));
+                    boolean Estado = rs.getBoolean(7);
+                    String Estate = "Cancelado";
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[6] = Estate;
+
+                    r.add(Datos);
                 }
-                Datos[6] = Estate;
 
-                model.addRow(Datos);
-            }
+                return r;
+            }, ID_Pago).stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
@@ -142,20 +148,25 @@ public class VerDetallePago extends javax.swing.JDialog {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -163,7 +174,8 @@ public class VerDetallePago extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                VerDetallePago dialog = new VerDetallePago(new javax.swing.JFrame(), true);
+                VerDetallePago dialog = new VerDetallePago(
+                    new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

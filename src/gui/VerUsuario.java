@@ -6,13 +6,12 @@
 package gui;
 
 import repository.Conexion;
-import repository.Especialidad;
 import repository.Usuario;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+import java.util.*;
 
 /**
  *
@@ -25,7 +24,7 @@ public class VerUsuario extends javax.swing.JInternalFrame {
      */
     public VerUsuario() {
         initComponents();
-         jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
     }
 
@@ -160,11 +159,11 @@ public class VerUsuario extends javax.swing.JInternalFrame {
         setBounds(0, 0, 705, 510);
     }// </editor-fold>//GEN-END:initComponents
 
-      public void Modificar() {
+    public void Modificar() {
 
         int Fila = jTable1.getSelectedRow();
 
-     //   System.out.println("Fila "+Fila);
+        //   System.out.println("Fila "+Fila);
         if (Fila >= 0) {
 
             int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
@@ -177,141 +176,148 @@ public class VerUsuario extends javax.swing.JInternalFrame {
 //        this.toBack();
 //        ME.toFront();
         } else {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar el registro a modificar",
-                    "Seleccione", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar el registro a modificar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
         }
 
     }
-    
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-Modificar();
+        Modificar();
 // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-this.dispose();        // TODO add your handling code here:
+        this.dispose();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    ResultSet resultado;
-    
-    public void CargarDatos(){
+    public void CargarDatos() {
         model.setRowCount(0);
-        
-String [] Header = {"No.","Nombre","Contrasena","Rol","Estado"};    
-model.setColumnIdentifiers(Header);
 
-String [] Datos = new String[5];
+        String[] Header = {"No.", "Nombre", "Contrasena", "Rol", "Estado"};
+        model.setColumnIdentifiers(Header);
 
-try{
-    
-    resultado = Conexion.consulta("Select * from Usuario");
-    
-    while(resultado.next()){
-       Datos [0] = String.valueOf(resultado.getInt(1));
-       Datos [1] = resultado.getString(2);
-       Datos [2] = resultado.getString(3);
-       Datos [3] = resultado.getString(4);
-       boolean Estado = resultado.getBoolean(5);
-       String Estate = "Inactivo";
-       if(Estado){
-         Estate = "Activo";
-       }
-       Datos [4] = Estate;
-       
-       model.addRow(Datos);
+        try {
+
+            Conexion.runner().query(
+                "Select * from Usuario",
+                rs -> {
+
+                List<String[]> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    String[] Datos = new String[5];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    Datos[1] = rs.getString(2);
+                    Datos[2] = rs.getString(3);
+                    Datos[3] = rs.getString(4);
+                    boolean Estado = rs.getBoolean(5);
+                    String Estate = "Inactivo";
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[4] = Estate;
+
+                    r.add(Datos);
+                }
+
+                return r;
+            }).stream().forEach(model::addRow);
+
+        } catch (SQLException ex) {
+
+        }
+
+        jTable1.setModel(model);
+
     }
-    
-}catch(SQLException ex){
-    
-}
 
-jTable1.setModel(model);
-
-    }
-    
     private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameOpened
-CargarDatos();
+        CargarDatos();
 // TODO add your handling code here:
     }//GEN-LAST:event_formInternalFrameOpened
 
-      
-    public void ActDes(){
-        
-           
-int Fila = jTable1.getSelectedRow();
-int Col = 4;
+    public void ActDes() {
 
-     //   System.out.println("Fila "+Fila);
+        int Fila = jTable1.getSelectedRow();
+        int Col = 4;
 
-if(Fila >= 0){
-  
-    int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
-    String Estado = model.getValueAt(Fila, Col).toString();
-    
-    if(Estado.equalsIgnoreCase("Activo")){
-        Usuario.Desactivar_Usuario(ID); //Des  
-    }
-    if(Estado.equalsIgnoreCase("Inactivo")){
-     Usuario.Activar_Usuario(ID);  //Act
+        //   System.out.println("Fila "+Fila);
+        if (Fila >= 0) {
+
+            int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
+            String Estado = model.getValueAt(Fila, Col).toString();
+
+            if (Estado.equalsIgnoreCase("Activo")) {
+                Usuario.Desactivar_Usuario(ID); //Des  
+            }
+            if (Estado.equalsIgnoreCase("Inactivo")) {
+                Usuario.Activar_Usuario(ID);  //Act
+            }
+
+            CargarDatos();
+
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar el registro a Activar/Desactivar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    CargarDatos();
-    
-}
-else{
-    JOptionPane.showMessageDialog(this, "Debe seleccionar el registro a Activar/Desactivar", 
-            "Seleccione", JOptionPane.ERROR_MESSAGE);  
-} 
-    }
-  
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-     ActDes();   // TODO add your handling code here:
+        ActDes();   // TODO add your handling code here:
     }//GEN-LAST:event_jButton4ActionPerformed
 
-    public void Buscar(){
-        
-         String Buscar = txtBuscar.getText();
-         
-          model.setRowCount(0);
-        
-String [] Header = {"No.","Nombre","Contrasena","Rol","Estado"};    
-model.setColumnIdentifiers(Header);
+    public void Buscar() {
 
-String [] Datos = new String[5];
+        String Buscar = txtBuscar.getText();
 
-try{
-    
-    resultado = Conexion.consulta("Select * from Usuario where Nombre_Usuario like '%"+Buscar+"%'");
-    
-    while(resultado.next()){
-       Datos [0] = String.valueOf(resultado.getInt(1));
-       Datos [1] = resultado.getString(2);
-       Datos [2] = resultado.getString(3);
-       Datos [3] = resultado.getString(4);
-       boolean Estado = resultado.getBoolean(5);
-       String Estate = "Inactivo";
-       if(Estado){
-         Estate = "Activo";
-       }
-       Datos [4] = Estate;
-       
-       model.addRow(Datos);
+        model.setRowCount(0);
+
+        String[] Header = {"No.", "Nombre", "Contrasena", "Rol", "Estado"};
+        model.setColumnIdentifiers(Header);
+
+        try {
+
+            Conexion.runner().query(
+                "Select * from Usuario where Nombre_Usuario like ?",
+                rs -> {
+                List<String[]> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    String[] Datos = new String[5];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    Datos[1] = rs.getString(2);
+                    Datos[2] = rs.getString(3);
+                    Datos[3] = rs.getString(4);
+                    boolean Estado = rs.getBoolean(5);
+                    String Estate = "Inactivo";
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[4] = Estate;
+
+                    r.add(Datos);
+                }
+
+                return r;
+            }, "%" + Buscar + "%").stream().forEach(model::addRow);
+
+        } catch (SQLException ex) {
+
+        }
+
+        jTable1.setModel(model);
+
     }
-    
-}catch(SQLException ex){
-    
-}
 
-jTable1.setModel(model);
-         
-    }
-    
-    
+
     private void txtBuscarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyReleased
-Buscar();        // TODO add your handling code here:
+        Buscar();        // TODO add your handling code here:
     }//GEN-LAST:event_txtBuscarKeyReleased
-
-
 
     DefaultTableModel model = new DefaultTableModel() {
 

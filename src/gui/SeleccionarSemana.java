@@ -7,6 +7,8 @@ package gui;
 
 import repository.Conexion;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -117,40 +119,38 @@ public class SeleccionarSemana extends javax.swing.JDialog {
     public void setID_M(int ID_M) {
         this.ID_M = ID_M;
     }
-    
-    
-    public void Seleccionar(){
-        
-            Date Fecha = jCalendar1.getDate();
-   
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(Fecha.getTime());
-            int Semana = cal.get(Calendar.WEEK_OF_YEAR);
-            
-        
+
+    public void Seleccionar() {
+
+        Date Fecha = jCalendar1.getDate();
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(Fecha.getTime());
+        int Semana = cal.get(Calendar.WEEK_OF_YEAR);
+
         Map<String, Object> parametros = new HashMap<String, Object>();
         parametros.put("Semana", Semana);
 
-        if(Opcion==1){
-        parametros.put("ID_M", ID_M);  
+        if (Opcion == 1) {
+            parametros.put("ID_M", ID_M);
         }
 
-          
-        File miDir = new File ("");
+        File miDir = new File("");
         String reporte;
-        
-        if(Opcion==1){
-        reporte = miDir.getAbsolutePath()+"/src/report/HorarioPorMedicoSemanal.jasper";
-        }else{
-        reporte = miDir.getAbsolutePath()+"/src/report/HorarioSemanalGeneral.jasper";
-        }
-        
-        JasperPrint jp = null;
-        try {
-            jp = JasperFillManager.fillReport(reporte, parametros, Conexion.get());
-        } catch (JRException ex) {
 
-            //   Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+        if (Opcion == 1) {
+            reporte = miDir.getAbsolutePath()
+                + "/src/report/HorarioPorMedicoSemanal.jasper";
+        } else {
+            reporte = miDir.getAbsolutePath()
+                + "/src/report/HorarioSemanalGeneral.jasper";
+        }
+
+        JasperPrint jp = null;
+
+        try (Connection c = Conexion.connection()) {
+            jp = JasperFillManager.fillReport(reporte, parametros, c);
+        } catch (JRException | SQLException ex) {
         }
 
         JasperViewer view = new JasperViewer(jp, false);
@@ -163,7 +163,7 @@ public class SeleccionarSemana extends javax.swing.JDialog {
         view.toFront();
         this.dispose();
     }
-    
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Seleccionar();
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -176,8 +176,7 @@ public class SeleccionarSemana extends javax.swing.JDialog {
         Date hoy = new Date();
         jCalendar1.setMinSelectableDate(hoy);
         jCalendar1.setDate(hoy);
-       
-        
+
 // TODO add your handling code here:
     }//GEN-LAST:event_formWindowOpened
 
@@ -191,27 +190,37 @@ public class SeleccionarSemana extends javax.swing.JDialog {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SeleccionarSemana.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.
+                getLogger(SeleccionarSemana.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SeleccionarSemana.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.
+                getLogger(SeleccionarSemana.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SeleccionarSemana.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.
+                getLogger(SeleccionarSemana.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SeleccionarSemana.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.
+                getLogger(SeleccionarSemana.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                SeleccionarSemana dialog = new SeleccionarSemana(new javax.swing.JFrame(), true);
+                SeleccionarSemana dialog = new SeleccionarSemana(
+                    new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

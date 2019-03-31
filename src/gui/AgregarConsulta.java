@@ -297,12 +297,24 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
             try {
 
-                List<List<String>> resultados = Conexion.runner().execute(
+                List<List<String>> resultados = Conexion.runner().query(
                     "Select Nombres_Med, Apellidos_Med, Nombres, Apellidos"
                     + " from CitaV Where ID_Cita = ?",
-                    rs -> Arrays.asList(rs.getString(1).trim() + " " + rs.
-                        getString(2).trim(), rs.getString(3).trim() + " " + rs.
-                        getString(4).trim()), ID_Cita);
+                    rs -> {
+
+                    List<List<String>> resultado = new ArrayList<>();
+
+                    while (rs.next()) {
+                        resultado.add(Arrays.asList(rs.getString(1).trim() + " "
+                            + rs.
+                                getString(2).trim(), rs.getString(3).trim()
+                            + " " + rs.
+                                getString(4).trim()));
+                    }
+
+                    return resultado;
+
+                }, ID_Cita);
 
                 for (List<String> resultado : resultados) {
                     Iterator<String> iterator = resultado.iterator();
@@ -345,7 +357,7 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
             ID_Medico = Conexion.runner().query(
                 "Select ID_Medico from Medico where ID_Usuario = ?",
-                rs -> rs.getInt(1),
+                rs -> rs.next() ? rs.getInt(1) : 0,
                 Principal.INSTANCE.getID_Usuario());
 
             System.out.println("ID " + ID_Medico);
@@ -470,10 +482,18 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select Dia, Hora_Inicial, Hora_Final from Horario where ID_Medico = ?",
-                rs -> Arrays.asList(rs.getString(1), rs.getString(2), rs.
-                    getString(3)),
+                rs -> {
+                List<List<String>> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    r.add(Arrays.asList(rs.getString(1), rs.getString(2), rs.
+                        getString(3)));
+                }
+
+                return r;
+            },
                 ID_Medico);
 
             for (List<String> resultado : resultados) {
@@ -498,12 +518,22 @@ public class AgregarConsulta extends javax.swing.JInternalFrame {
             date = Fecha.getTime();
             java.sql.Date Fechac = new java.sql.Date(date);
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select Hora_Cita, Estado, Nombres, Apellidos, ID_Cita "
                 + "from CitaV where (ID_Medico = ?) and (Fecha_Cita = ?)",
-                rs -> Arrays.asList(rs.getString(1), rs.getString(2),
-                    rs.getString(3).trim() + " " + rs.getString(4).trim(),
-                    rs.getString(5)),
+                rs -> {
+
+                List<List<String>> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    r.add(Arrays.asList(rs.getString(1), rs.getString(2),
+                        rs.getString(3).trim() + " " + rs.getString(4).trim(),
+                        rs.getString(5)));
+                }
+
+                return r;
+
+            },
                 ID_Medico, Fechac);
 
             for (List<String> resultado : resultados) {

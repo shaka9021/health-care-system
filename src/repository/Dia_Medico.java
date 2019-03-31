@@ -46,7 +46,7 @@ public class Dia_Medico {
 
             String estado = Conexion.runner().query(
                 "Select Estado_Dia_Medico from revista where ID_Dia_Medico = ?",
-                rs -> rs.getString(1), ID);
+                rs -> rs.next()? rs.getString(1) : null, ID);
 
             if ("Activo".equals(estado)) {
 

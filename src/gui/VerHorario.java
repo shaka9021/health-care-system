@@ -6,10 +6,10 @@
 package gui;
 
 import repository.Conexion;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
+import java.util.*;
 
 /**
  *
@@ -81,61 +81,66 @@ public class VerHorario extends javax.swing.JDialog {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    ResultSet resultado;
-    
-    public void CargarDatos(int ID_Medico){
-      
-String [] Header = {"Dia","Desde","Hasta"};    
-model.setColumnIdentifiers(Header);  
-this.jTable1.setModel(model);
-        
-String [] Datos = new String[3];
+    public void CargarDatos(int ID_Medico) {
 
-try{
-    
-    resultado = Conexion.consulta("Select Dia, Hora_Inicial, Hora_Final from Horario "
-            + "Where ID_Medico = "+ID_Medico);
-    
-    while(resultado.next()){
-        
-       String Dia = resultado.getString(1);
-       
-       if("L".equals(Dia)){
-           Dia = "Lunes";
-       }
-       if("M".equals(Dia)){
-           Dia = "Martes";
-       }
-       if("X".equals(Dia)){
-           Dia = "Miercoles";
-       }
-       if("J".equals(Dia)){
-           Dia = "Jueves";
-       }
-       if("V".equals(Dia)){
-           Dia = "Viernes";
-       }
-       if("S".equals(Dia)){
-           Dia = "Sabado";
-       }
-       if("D".equals(Dia)){
-           Dia = "Domingo";
-       }
-       Datos [0] = Dia;
-       Datos [1] = resultado.getString(2);
-       Datos [2] = resultado.getString(3);
+        String[] Header = {"Dia", "Desde", "Hasta"};
+        model.setColumnIdentifiers(Header);
+        this.jTable1.setModel(model);
 
-       model.addRow(Datos);
+        try {
+
+            Conexion.runner().query(
+                "Select Dia, Hora_Inicial, Hora_Final from Horario "
+                + "Where ID_Medico = ?",
+                rs -> {
+
+                List<String[]> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    String[] Datos = new String[3];
+
+                    String Dia = rs.getString(1);
+
+                    if ("L".equals(Dia)) {
+                        Dia = "Lunes";
+                    }
+                    if ("M".equals(Dia)) {
+                        Dia = "Martes";
+                    }
+                    if ("X".equals(Dia)) {
+                        Dia = "Miercoles";
+                    }
+                    if ("J".equals(Dia)) {
+                        Dia = "Jueves";
+                    }
+                    if ("V".equals(Dia)) {
+                        Dia = "Viernes";
+                    }
+                    if ("S".equals(Dia)) {
+                        Dia = "Sabado";
+                    }
+                    if ("D".equals(Dia)) {
+                        Dia = "Domingo";
+                    }
+                    Datos[0] = Dia;
+                    Datos[1] = rs.getString(2);
+                    Datos[2] = rs.getString(3);
+
+                    r.add(Datos);
+                }
+
+                return r;
+            },
+                ID_Medico).stream().forEach(model::addRow);
+
+        } catch (SQLException ex) {
+
+        }
+
+        jTable1.setModel(model);
+
     }
-    
-}catch(SQLException ex){
-    
-}
 
-jTable1.setModel(model);
-
-    }
-    
     DefaultTableModel model = new DefaultTableModel() {
 
         @Override
@@ -145,6 +150,7 @@ jTable1.setModel(model);
         }
 
     };
+
     /**
      * @param args the command line arguments
      */
@@ -155,27 +161,33 @@ jTable1.setModel(model);
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VerHorario.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerHorario.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VerHorario.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerHorario.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VerHorario.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerHorario.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VerHorario.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerHorario.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                VerHorario dialog = new VerHorario(new javax.swing.JFrame(), true);
+                VerHorario dialog = new VerHorario(new javax.swing.JFrame(),
+                    true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

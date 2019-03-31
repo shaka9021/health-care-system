@@ -6,11 +6,11 @@
 package gui;
 
 import repository.Conexion;
-import repository.Especialidad;
 import repository.Servicio;
 import java.awt.Toolkit;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Iterator;
 import javax.swing.JOptionPane;
 
 /**
@@ -165,7 +165,8 @@ public class ModificarServicio extends javax.swing.JDialog {
         String PrecioF = txtPrecio.getText().trim();
 
         if ("".equals(Nombre) || "".equals(Descripcion) || "".equals(PrecioF)) {
-            JOptionPane.showMessageDialog(this, "Complete todos los campos", "Complete", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Complete todos los campos",
+                "Complete", JOptionPane.ERROR_MESSAGE);
 
         } else {
             double Precio = Double.parseDouble(PrecioF);
@@ -181,13 +182,11 @@ public class ModificarServicio extends javax.swing.JDialog {
     }
 
     int IDD;
-    ResultSet resultado;
     private VerServicio VS;
 
     public void setVS(VerServicio VS) {
         this.VS = VS;
     }
-    
 
     public void CargarDatos(int ID) {
         String Nombre = "";
@@ -196,17 +195,21 @@ public class ModificarServicio extends javax.swing.JDialog {
 
         try {
 
-            resultado = Conexion.consulta("Select * from Servicio where ID_Servicio = " + ID);
+            Iterator<String> resultado = Conexion.runner().query(
+                "Select * from Servicio where ID_Servicio = ?",
+                rs -> rs.next() ? Arrays.asList(
+                String.valueOf(rs.getInt(1)),
+                rs.getString(2),
+                rs.getString(3),
+                String.valueOf(rs.getDouble(4))).iterator() : null,
+                ID);
 
-            while (resultado.next()) {
-                IDD = resultado.getInt(1);
-                Nombre = resultado.getString(2);
-                Descripcion = resultado.getString(3);
-                Precio = String.valueOf(resultado.getDouble(4));
+            IDD = Integer.parseInt(resultado.next());
+            Nombre = resultado.next();
+            Descripcion = resultado.next();
+            Precio = resultado.next();
 
-            }
-
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
         }
 
         txtNombre.setText(Nombre);
@@ -214,8 +217,8 @@ public class ModificarServicio extends javax.swing.JDialog {
         txtPrecio.setText(Precio);
 
     }
-    
-    
+
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Guardar();
 // TODO add your handling code here:
@@ -235,7 +238,8 @@ public class ModificarServicio extends javax.swing.JDialog {
             return;
         }
 
-        if ("0".equals(txtPrecio.getText()) && txtPrecio.getCaretPosition() == 1 && a != '.' && !Character.isISOControl(a)) {
+        if ("0".equals(txtPrecio.getText()) && txtPrecio.getCaretPosition() == 1
+            && a != '.' && !Character.isISOControl(a)) {
             txtPrecio.setText(txtPrecio.getText() + ".");
 //        return;
         }
@@ -247,7 +251,8 @@ public class ModificarServicio extends javax.swing.JDialog {
         }
 
         String x1 = "";
-        if (Character.isDigit(a) || (Character.isISOControl(a) && !"".equals(txtPrecio.getText()))) {
+        if (Character.isDigit(a) || (Character.isISOControl(a) && !"".equals(
+            txtPrecio.getText()))) {
             x1 = txtPrecio.getText();
         }
         if (Character.isDigit(a) || (a == '.')) {
@@ -277,12 +282,12 @@ public class ModificarServicio extends javax.swing.JDialog {
     }//GEN-LAST:event_txtPrecioKeyTyped
 
     private void txtNombreKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreKeyTyped
-char a = evt.getKeyChar();
+        char a = evt.getKeyChar();
 
-if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
-    evt.consume();
-    Toolkit.getDefaultToolkit().beep();
-}        // TODO add your handling code here:
+        if (!Character.isLetter(a) && !Character.isISOControl(a) && a != ' ') {
+            evt.consume();
+            Toolkit.getDefaultToolkit().beep();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtNombreKeyTyped
 
     /**
@@ -295,20 +300,25 @@ if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(VerDetallePago.class.getName()).
+                log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -316,7 +326,8 @@ if(!Character.isLetter(a)&&!Character.isISOControl(a)&&a!=' '){
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ModificarServicio dialog = new ModificarServicio(new javax.swing.JFrame(), true);
+                ModificarServicio dialog = new ModificarServicio(
+                    new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
