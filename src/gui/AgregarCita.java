@@ -9,7 +9,6 @@ import repository.Cita;
 import repository.Conexion;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -460,7 +459,12 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
             ID_Especialidad = Conexion.runner().query(
                 "Select Max(ID_Especialidad) from Especialidad",
-                rs -> rs.getInt(title));
+                rs -> {
+                if (!rs.next()) {
+                    return 0;
+                }
+                return rs.getInt(title);
+            });
 
         } catch (SQLException ex) {
         }
@@ -475,9 +479,18 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
         try {
 
-            List<Integer> resultados = Conexion.runner().execute(
+            List<Integer> resultados = Conexion.runner().query(
                 "Select ID_Especialidad, Nombre from Especialidad where Estado = ?",
-                rs -> rs.getInt(1),
+                rs -> {
+
+                ArrayList<Integer> results = new ArrayList<>();
+
+                while (rs.next()) {
+                    results.add(rs.getInt(1));
+                }
+
+                return results;
+            },
                 1);
 
             for (Integer resultado : resultados) {
@@ -495,7 +508,13 @@ public class AgregarCita extends javax.swing.JInternalFrame {
         try {
 
             ID_Paciente = Conexion.runner().query(
-                "Select Max(ID_Paciente) from Paciente", rs -> rs.getInt(1));
+                "Select Max(ID_Paciente) from Paciente",
+                rs -> {
+                if (!rs.next()) {
+                    return 0;
+                }
+                return rs.getInt(1);
+            });
 
         } catch (SQLException ex) {
         }
@@ -510,10 +529,20 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select ID_Paciente, Nombres, Apellidos from Paciente where Estado = ?",
-                rs -> Arrays.asList(rs.getString(1), rs.getString(2).
-                    trim() + " " + rs.getString(3).trim()),
+                rs -> {
+
+                ArrayList<List<String>> resultado = new ArrayList<>();
+
+                while (rs.next()) {
+                    resultado.add(Arrays.asList(rs.getString(1),
+                        rs.getString(2).
+                            trim() + " " + rs.getString(3).trim()));
+                }
+
+                return resultado;
+            },
                 1);
 
             for (List<String> resultado : resultados) {
@@ -534,7 +563,13 @@ public class AgregarCita extends javax.swing.JInternalFrame {
         try {
 
             ID_Medico = Conexion.runner().query(
-                "Select Max(ID_Medico) from Medico", rs -> rs.getInt(1));
+                "Select Max(ID_Medico) from Medico",
+                rs -> {
+                if (!rs.next()) {
+                    return 0;
+                }
+                return rs.getInt(1);
+            });
 
         } catch (SQLException ex) {
 
@@ -602,12 +637,22 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select ID_Medico, Nombres, Apellidos from Medico where "
                 + "(ID_Especialidad = ?) and (Estado = ?)",
-                rs -> Arrays.asList(rs.getString(1),
-                    rs.getString(2).trim() + " "
-                    + rs.getString(3).trim()),
+                rs -> {
+
+                ArrayList<List<String>> result = new ArrayList<>();
+
+                while (rs.next()) {
+                    result.add(Arrays.asList(rs.getString(1),
+                        rs.getString(2).trim() + " "
+                        + rs.getString(3).trim()));
+                }
+
+                return result;
+
+            },
                 ID_Especialidad, 1);
 
             for (List<String> resultado : resultados) {
@@ -673,11 +718,21 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
         try {
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select Dia, Hora_Inicial, Hora_Final"
                 + " from Horario where ID_Medico = ?",
-                rs -> Arrays.asList(rs.getString(1),
-                    rs.getString(2), rs.getString(3)),
+                rs -> {
+
+                List<List<String>> result = new ArrayList<>();
+
+                while (rs.next()) {
+                    result.add(Arrays.asList(rs.getString(1),
+                        rs.getString(2), rs.getString(3)));
+                }
+
+                return result;
+
+            },
                 ID_Medico);
 
             for (List<String> resultado : resultados) {
@@ -701,9 +756,19 @@ public class AgregarCita extends javax.swing.JInternalFrame {
             date = Fecha.getTime();
             java.sql.Date Fechac = new java.sql.Date(date);
 
-            List<List<String>> resultados = Conexion.runner().execute(
+            List<List<String>> resultados = Conexion.runner().query(
                 "Select Hora_Cita, Estado from Cita where (ID_Medico = ?) and (Fecha_Cita = ?)",
-                rs -> Arrays.asList(rs.getString(1), rs.getString(2)),
+                rs -> {
+
+                List<List<String>> resultado = new ArrayList<>();
+
+                while (rs.next()) {
+                    resultado.add(Arrays.
+                        asList(rs.getString(1), rs.getString(2)));
+                }
+
+                return resultado;
+            },
                 ID_Medic, Fechac);
 
             for (List<String> resultado : resultados) {

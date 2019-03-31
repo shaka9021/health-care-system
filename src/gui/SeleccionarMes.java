@@ -7,7 +7,8 @@ package gui;
 
 import repository.Conexion;
 import java.io.File;
-import java.util.Calendar;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -152,12 +153,10 @@ public class SeleccionarMes extends javax.swing.JDialog {
         }
 
         JasperPrint jp = null;
-        try {
-            jp = JasperFillManager.fillReport(reporte, parametros, Conexion.get());
-        } catch (JRException ex) {
 
-            //   Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        try(Connection c = Conexion.connection()){
+            jp = JasperFillManager.fillReport(reporte, parametros, c);
+        } catch (JRException | SQLException ex) {}
 
         JasperViewer view = new JasperViewer(jp, false);
         view.setTitle("Horario General - Mensual");

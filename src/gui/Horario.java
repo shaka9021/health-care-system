@@ -744,7 +744,7 @@ public class Horario extends javax.swing.JDialog {
 
         try {
             ID_MaxM = Conexion.runner().query(
-                "Select Max(ID_Medico) from Medico", rs -> rs.getInt(1));
+                "Select Max(ID_Medico) from Medico", rs -> rs.next()? rs.getInt(1) : 0);
         } catch (SQLException ex) {
         }
 
@@ -767,7 +767,7 @@ public class Horario extends javax.swing.JDialog {
 
         try {
             ID_MaxU = Conexion.runner().query(
-                "Select Max(ID_Usuario) from Usuario", rs -> rs.getInt(1));
+                "Select Max(ID_Usuario) from Usuario", rs -> rs.next()? rs.getInt(1) : 0);
 
         } catch (SQLException ex) {
         }
@@ -821,7 +821,7 @@ public class Horario extends javax.swing.JDialog {
             try {
                 ID_MaxD = Conexion.runner().query(
                     "Select Max(ID_Dia_Medico) from Dia_Medico",
-                    rs -> rs.getInt(1));
+                    rs -> rs.next()? rs.getInt(1) : 0);
 
             } catch (SQLException ex) {
             }
@@ -845,7 +845,7 @@ public class Horario extends javax.swing.JDialog {
             try {
                 ID_MaxD = Conexion.runner().query(
                     "Select Max(ID_Dia_Medico) from Dia_Medico",
-                    rs -> rs.getInt(1));
+                    rs -> rs.next()? rs.getInt(1) : 0);
             } catch (SQLException ex) {
             }
 
@@ -868,7 +868,7 @@ public class Horario extends javax.swing.JDialog {
             try {
                 ID_MaxD = Conexion.runner().query(
                     "Select Max(ID_Dia_Medico) from Dia_Medico",
-                    rs -> rs.getInt(1));
+                    rs -> rs.next()? rs.getInt(1) : 0);
             } catch (SQLException ex) {
             }
 
@@ -891,7 +891,7 @@ public class Horario extends javax.swing.JDialog {
             try {
                 ID_MaxD = Conexion.runner().query(
                     "Select Max(ID_Dia_Medico) from Dia_Medico",
-                    rs -> rs.getInt(0));
+                    rs -> rs.next()? rs.getInt(1) : 0);
             } catch (SQLException ex) {
             }
 
@@ -914,7 +914,7 @@ public class Horario extends javax.swing.JDialog {
             try {
                 ID_MaxD = Conexion.runner().query(
                     "Select Max(ID_Dia_Medico) from Dia_Medico",
-                    rs -> rs.getInt(1));
+                    rs -> rs.next()? rs.getInt(1) : 0);
             } catch (SQLException ex) {
             }
 
@@ -937,7 +937,7 @@ public class Horario extends javax.swing.JDialog {
             try {
                 ID_MaxD = Conexion.runner().query(
                     "Select Max(ID_Dia_Medico) from Dia_Medico",
-                    rs -> rs.getInt(1));
+                    rs -> rs.next()? rs.getInt(1) : 0);
 
             } catch (SQLException ex) {
             }
@@ -962,7 +962,7 @@ public class Horario extends javax.swing.JDialog {
 
                 ID_MaxD = Conexion.runner().query(
                     "Select Max(ID_Dia_Medico) from Dia_Medico",
-                    rs -> rs.getInt(1));
+                    rs -> rs.next()? rs.getInt(1) : 0);
 
             } catch (SQLException ex) {
             }

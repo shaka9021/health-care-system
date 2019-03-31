@@ -6,18 +6,12 @@
 package gui;
 
 import repository.Conexion;
-import java.io.File;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.JOptionPane;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.view.JasperViewer;
+import java.util.List;
+import java.util.Iterator;
 
 /**
  *
@@ -127,26 +121,25 @@ public class SeleccionarMedico extends javax.swing.JDialog {
         this.Opcion = Opcion;
     }
 
-
-    
-    public void Seleccionar(){
+    public void Seleccionar() {
         int cmbMed = cmbMedico.getSelectedIndex();
-        
-        if(cmbMed<0){
-            JOptionPane.showMessageDialog(this, "Seleccione al Medico","Seleccione",JOptionPane.ERROR_MESSAGE);
+
+        if (cmbMed < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccione al Medico",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
             return;
         }
         int ID_Medico = ID_Med[cmbMed];
-        
+
         ModoReporte MR = new ModoReporte(null, false);
         MR.setID_M(ID_Medico);
-        System.out.println("IDM "+ID_Medico);
+        System.out.println("IDM " + ID_Medico);
         MR.setOpcion(Opcion);
         MR.setVisible(true);
         MR.toFront();
         this.dispose();
     }
-    
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Seleccionar();
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -154,46 +147,60 @@ public class SeleccionarMedico extends javax.swing.JDialog {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         this.dispose();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
-    ResultSet resultado;
-    int [] ID_Med;
+
+    int[] ID_Med;
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-       
-        
+
         cmbMedico.removeAllItems();
         cmbMedico.addItem("<Seleccione>");
-           
+
         int MaxID = 0;
-        
-      try{
-          
-          resultado = Conexion.consulta("Select MAX(ID_Medico) from Medico");
-          while(resultado.next()){
-           MaxID = resultado.getInt(1);
-          }
-      }catch(SQLException ex){
-          System.out.println("erro");
-      }
-        
-      MaxID++;
-      
-      ID_Med = new int [MaxID];
-      ID_Med [0] = 0;
-      
-      int i = 1;
-        
-      try{
-          
-          resultado = Conexion.consulta("Select ID_Medico, Nombres, Apellidos from Medico where Estado = "+true);
-          while(resultado.next()){
-           ID_Med[i] = resultado.getInt(1);
-    
-           cmbMedico.addItem(resultado.getString(2).trim()+" "+resultado.getString(3).trim());
-           i++;
-          }
-      }catch(SQLException ex){
-          
-      }
-        
+
+        try {
+
+            MaxID = Conexion.runner().query(
+                "Select MAX(ID_Medico) from Medico",
+                rs -> rs.next() ? rs.getInt(1) : 0);
+
+        } catch (SQLException ex) {
+            System.out.println("erro");
+        }
+
+        MaxID++;
+
+        ID_Med = new int[MaxID];
+        ID_Med[0] = 0;
+
+        int i = 1;
+
+        try {
+
+            List<Iterator<String>> resultados = Conexion.runner().query(
+                "Select ID_Medico, Nombres, Apellidos from Medico where Estado = ?",
+                rs -> {
+
+                List<Iterator<String>> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    r.add(Arrays.asList(String.valueOf(rs.getInt(1)), rs.
+                        getString(2).trim() + " "
+                        + rs.getString(3).trim()).iterator());
+                }
+
+                return r;
+
+            },
+                1);
+
+            for (Iterator<String> resultado : resultados) {
+                ID_Med[i] = Integer.parseInt(resultado.next());
+                cmbMedico.addItem(resultado.next());
+                i++;
+            }
+        } catch (SQLException ex) {
+
+        }
+
 // TODO add your handling code here:
     }//GEN-LAST:event_formWindowOpened
 
@@ -207,20 +214,29 @@ public class SeleccionarMedico extends javax.swing.JDialog {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SeleccionarMedico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.
+                getLogger(SeleccionarMedico.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SeleccionarMedico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.
+                getLogger(SeleccionarMedico.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SeleccionarMedico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.
+                getLogger(SeleccionarMedico.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SeleccionarMedico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.
+                getLogger(SeleccionarMedico.class.getName()).log(
+                java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -230,7 +246,8 @@ public class SeleccionarMedico extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                SeleccionarMedico dialog = new SeleccionarMedico(new javax.swing.JFrame(), true);
+                SeleccionarMedico dialog = new SeleccionarMedico(
+                    new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

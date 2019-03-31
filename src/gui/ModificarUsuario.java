@@ -7,8 +7,9 @@ package gui;
 
 import repository.Conexion;
 import repository.Usuario;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Iterator;
 import javax.swing.JOptionPane;
 
 /**
@@ -118,17 +119,21 @@ public class ModificarUsuario extends javax.swing.JDialog {
 
         try {
 
-            resultado = Conexion.consulta("Select * from Usuario where ID_Usuario = " + ID);
+            Iterator<String> resultado = Conexion.runner().query(
+                "Select * from Usuario where ID_Usuario = ?",
+                rs -> rs.next()? Arrays.asList( 
+                    String.valueOf(rs.getInt(1)), 
+                    rs.getString(2), 
+                    rs.getString(3), 
+                    rs.getString(4)).iterator() : null,
+                ID);
 
-            while (resultado.next()) {
-                IDD = resultado.getInt(1);
-                User = resultado.getString(2);
-                Pass = resultado.getString(3);
-                Tipo = resultado.getString(4);
+                IDD = Integer.parseInt(resultado.next());
+                User = resultado.next();
+                Pass = resultado.next();
+                Tipo = resultado.next();
 
-            }
-
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
         }
 
         txtUser.setText(User);
@@ -171,7 +176,6 @@ public class ModificarUsuario extends javax.swing.JDialog {
     }
 
     int IDD;
-    ResultSet resultado;
     private VerUsuario VU;
 
     public void setVU(VerUsuario VU) {

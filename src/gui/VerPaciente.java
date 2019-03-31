@@ -8,10 +8,12 @@ package gui;
 import repository.Conexion;
 import repository.Paciente;
 import java.io.File;
-import java.sql.ResultSet;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
@@ -185,14 +187,14 @@ public class VerPaciente extends javax.swing.JInternalFrame {
 
         File miDir = new File("");
 
-        String reporte = miDir.getAbsolutePath() + "/src/report/Expediente.jasper";
+        String reporte = miDir.getAbsolutePath()
+            + "/src/report/Expediente.jasper";
 
         JasperPrint jp = null;
-        try {
-            jp = JasperFillManager.fillReport(reporte, parametros, Conexion.get());
-        } catch (JRException ex) {
 
-            //   Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+        try (Connection c = Conexion.connection()) {
+            jp = JasperFillManager.fillReport(reporte, parametros, c);
+        } catch (JRException | SQLException ex) {
         }
 
         JasperViewer view = new JasperViewer(jp, false);
@@ -210,7 +212,7 @@ public class VerPaciente extends javax.swing.JInternalFrame {
 
         int Fila = jTable1.getSelectedRow();
 
-     //   System.out.println("Fila "+Fila);
+        //   System.out.println("Fila "+Fila);
         if (Fila >= 0) {
 
             int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
@@ -223,8 +225,9 @@ public class VerPaciente extends javax.swing.JInternalFrame {
 //        this.toBack();
 //        ME.toFront();
         } else {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar el registro a modificar",
-                    "Seleccione", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar el registro a modificar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -238,43 +241,49 @@ public class VerPaciente extends javax.swing.JInternalFrame {
         this.dispose();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    ResultSet resultado;
-
     public void CargarDatos() {
         model.setRowCount(0);
 
         String[] Header = {"No.", "Nombres", "Apellidos", "Peso", "Altura",
-            "Edad", "Telefono", "Alergias", "Enfermedades", "Tipo Sangre", "Estado"};
+            "Edad", "Telefono", "Alergias", "Enfermedades", "Tipo Sangre",
+            "Estado"};
         model.setColumnIdentifiers(Header);
-
-        String[] Datos = new String[11];
 
         try {
 
-            resultado = Conexion.consulta("Select * from Paciente");
+            Conexion.runner().query("Select * from Paciente",
+                rs -> {
 
-            while (resultado.next()) {
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                Datos[1] = resultado.getString(2);
-                Datos[2] = resultado.getString(3);
-                Datos[3] = String.valueOf(resultado.getFloat(4));
-                Datos[4] = String.valueOf(resultado.getFloat(5));
-                Datos[5] = String.valueOf(resultado.getInt(6));
-                Datos[6] = resultado.getString(7);
-                Datos[7] = resultado.getString(8);
-                Datos[8] = resultado.getString(9);
-                Datos[9] = resultado.getString(10);
+                List<String[]> r = new ArrayList<>();
 
-                boolean Estado = resultado.getBoolean(11);
-                String Estate = "Inactivo";
+                while (rs.next()) {
 
-                if (Estado) {
-                    Estate = "Activo";
+                    String[] Datos = new String[11];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    Datos[1] = rs.getString(2);
+                    Datos[2] = rs.getString(3);
+                    Datos[3] = String.valueOf(rs.getFloat(4));
+                    Datos[4] = String.valueOf(rs.getFloat(5));
+                    Datos[5] = String.valueOf(rs.getInt(6));
+                    Datos[6] = rs.getString(7);
+                    Datos[7] = rs.getString(8);
+                    Datos[8] = rs.getString(9);
+                    Datos[9] = rs.getString(10);
+
+                    boolean Estado = rs.getBoolean(11);
+                    String Estate = "Inactivo";
+
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[10] = Estate;
+
+                    r.add(Datos);
                 }
-                Datos[10] = Estate;
 
-                model.addRow(Datos);
-            }
+                return r;
+            }).stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
@@ -295,7 +304,7 @@ public class VerPaciente extends javax.swing.JInternalFrame {
         int Fila = jTable1.getSelectedRow();
         int Col = 10;
 
-     //   System.out.println("Fila "+Fila);
+        //   System.out.println("Fila "+Fila);
         if (Fila >= 0) {
 
             int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
@@ -311,8 +320,9 @@ public class VerPaciente extends javax.swing.JInternalFrame {
             CargarDatos();
 
         } else {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar el registro a Activar/Desactivar",
-                    "Seleccione", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar el registro a Activar/Desactivar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -325,76 +335,89 @@ public class VerPaciente extends javax.swing.JInternalFrame {
         VerExpediente();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton5ActionPerformed
 
-    
-    public void Buscar(){
-    
-      String Buscar = txtBuscar.getText();
-           
-         model.setRowCount(0);
+    public void Buscar() {
+
+        String Buscar = txtBuscar.getText();
+
+        model.setRowCount(0);
 
         String[] Header = {"No.", "Nombres", "Apellidos", "Peso", "Altura",
-            "Edad", "Telefono", "Alergias", "Enfermedades", "Tipo Sangre", "Estado"};
+            "Edad", "Telefono", "Alergias", "Enfermedades", "Tipo Sangre",
+            "Estado"};
         model.setColumnIdentifiers(Header);
-
-        String[] Datos = new String[11];
 
         try {
 
-            resultado = Conexion.consulta("Select * from Paciente where Nombres like '%"+Buscar+"%' "
-                    + "or Apellidos like '%"+Buscar+"%'");
+            Conexion.runner().query(
+                "Select * from Paciente where Nombres like ? "
+                + "or Apellidos like ?",
+                rs -> {
 
-            while (resultado.next()) {
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                Datos[1] = resultado.getString(2);
-                Datos[2] = resultado.getString(3);
-                Datos[3] = String.valueOf(resultado.getFloat(4));
-                Datos[4] = String.valueOf(resultado.getFloat(5));
-                Datos[5] = String.valueOf(resultado.getInt(6));
-                Datos[6] = resultado.getString(7);
-                Datos[7] = resultado.getString(8);
-                Datos[8] = resultado.getString(9);
-                Datos[9] = resultado.getString(10);
+                List<String[]> r = new ArrayList<>();
 
-                boolean Estado = resultado.getBoolean(11);
-                String Estate = "Inactivo";
+                while (rs.next()) {
 
-                if (Estado) {
-                    Estate = "Activo";
+                    String[] Datos = new String[11];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    Datos[1] = rs.getString(2);
+                    Datos[2] = rs.getString(3);
+                    Datos[3] = String.valueOf(rs.getFloat(4));
+                    Datos[4] = String.valueOf(rs.getFloat(5));
+                    Datos[5] = String.valueOf(rs.getInt(6));
+                    Datos[6] = rs.getString(7);
+                    Datos[7] = rs.getString(8);
+                    Datos[8] = rs.getString(9);
+                    Datos[9] = rs.getString(10);
+
+                    boolean Estado = rs.getBoolean(11);
+                    String Estate = "Inactivo";
+
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[10] = Estate;
+
+                    r.add(Datos);
                 }
-                Datos[10] = Estate;
 
-                model.addRow(Datos);
-            }
+                return r;
+
+            },
+                "%" + Buscar + "%",
+                "%" + Buscar + "%").stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
         }
 
         jTable1.setModel(model);
-      
-}
-    
-    
+
+    }
+
+
     private void txtBuscarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyReleased
-Buscar();        // TODO add your handling code here:
+        Buscar();        // TODO add your handling code here:
     }//GEN-LAST:event_txtBuscarKeyReleased
 
     public void VerExpediente() {
 
         int Fila = jTable1.getSelectedRow();
 
-     //   System.out.println("Fila "+Fila);
+        //   System.out.println("Fila "+Fila);
         if (Fila >= 0) {
 
             int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
 
-            String Paciente = model.getValueAt(Fila, 1).toString().trim() + " " + model.getValueAt(Fila, 2).toString().trim();
+            String Paciente = model.getValueAt(Fila, 1).toString().trim() + " "
+                + model.getValueAt(Fila, 2).toString().trim();
 
             Expediente(ID, Paciente);
 
         } else {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar el registro a modificar",
-                    "Seleccione", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar el registro a modificar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
         }
 
     }

@@ -8,8 +8,10 @@ package gui;
 import repository.Conexion;
 import repository.Consulta;
 import java.awt.event.KeyEvent;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  *
@@ -214,53 +216,53 @@ public class ModificarDiagnostico extends javax.swing.JDialog {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    ResultSet resultado;
     int IDD;
-    
-    public void CargarDatos(int ID){
-        
-    
-        String Paciente="";
+
+    public void CargarDatos(int ID) {
+
+        String Paciente = "";
         String Doctor = "";
-        String Descripcion="";
-        String Receta="";
-        String Diagnostico="";
-        
-        try{
-            
-            resultado = Conexion.consulta("Select ID_Consulta, Descripcion_Consulta, "
-                    + "Diagnostico, Receta, Nombres, Apellidos, NombreM, ApellidoM"
-                    + " from Expediente Where ID_Consulta = "+ID);
-            
-            while(resultado.next()){
-             IDD = resultado.getInt(1);
-             Descripcion = resultado.getString(2);
-             Diagnostico = resultado.getString(3);
-             Receta = resultado.getString(4);
-             Paciente = resultado.getString(5).trim()+" "+resultado.getString(6).trim();
-             Doctor = resultado.getString(7).trim()+" "+resultado.getString(8).trim();
-                
-            }
-            
-        }catch(SQLException ex){}
-        
-      txtConsulta.setText(Descripcion);
-      txtDiagnostico.setText(Diagnostico);
-      txtReceta.setText(Receta);
-      txtDr.setText(Doctor);
-      txtPaciente.setText(Paciente);
-      
-        
+        String Descripcion = "";
+        String Receta = "";
+        String Diagnostico = "";
+
+        try {
+
+            Iterator<String> resultado = Conexion.runner().query(
+                "Select ID_Consulta, Descripcion_Consulta, "
+                + "Diagnostico, Receta, Nombres, Apellidos, NombreM, ApellidoM"
+                + " from Expediente Where ID_Consulta = ?",
+                rs -> rs.next() ? Arrays.asList(String.valueOf(rs.getInt(1)),
+                    rs.getString(2), rs.getString(3), rs.getString(4),
+                    rs.getString(5).trim() + " " + rs.getString(6).trim(),
+                    rs.getString(7).trim() + " " + rs.getString(8).trim()) : null,
+                 ID).iterator();
+
+            IDD = Integer.valueOf(resultado.next());
+            Descripcion = resultado.next();
+            Diagnostico = resultado.next();
+            Receta = resultado.next();
+            Paciente = resultado.next();
+            Doctor = resultado.next();
+
+        } catch (Exception ex) {
+        }
+
+        txtConsulta.setText(Descripcion);
+        txtDiagnostico.setText(Diagnostico);
+        txtReceta.setText(Receta);
+        txtDr.setText(Doctor);
+        txtPaciente.setText(Paciente);
+
     }
 
     public void Guardar() {
         String ConsultaF = txtConsulta.getText().trim();
         String Diagnostico = txtDiagnostico.getText().trim();
         String Receta = txtReceta.getText().trim();
-     
 
         Consulta.Actualizar_Consulta(IDD, ConsultaF, Diagnostico, Receta);
-       
+
         Limpiar();
     }
 
@@ -269,13 +271,12 @@ public class ModificarDiagnostico extends javax.swing.JDialog {
     public void setVC(VerConsulta VC) {
         this.VC = VC;
     }
-    
-     
-    public void Limpiar(){
+
+    public void Limpiar() {
         VC.CargarDatos();
         dispose();
     }
-    
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Guardar();
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -285,18 +286,16 @@ public class ModificarDiagnostico extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void txtConsultaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtConsultaKeyTyped
-if(evt.getKeyChar() == KeyEvent.VK_TAB){
-  txtDiagnostico.requestFocus();
-}        // TODO add your handling code here:
+        if (evt.getKeyChar() == KeyEvent.VK_TAB) {
+            txtDiagnostico.requestFocus();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtConsultaKeyTyped
 
     private void txtDiagnosticoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtDiagnosticoKeyTyped
-if(evt.getKeyChar() == KeyEvent.VK_TAB){
-  txtReceta.requestFocus();
-}        // TODO add your handling code here:
+        if (evt.getKeyChar() == KeyEvent.VK_TAB) {
+            txtReceta.requestFocus();
+        }        // TODO add your handling code here:
     }//GEN-LAST:event_txtDiagnosticoKeyTyped
-  
-  
 
     /**
      * @param args the command line arguments
@@ -308,20 +307,25 @@ if(evt.getKeyChar() == KeyEvent.VK_TAB){
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (javax.swing.UIManager.LookAndFeelInfo info
+                : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ModificarDiagnostico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ModificarDiagnostico.class.
+                getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ModificarDiagnostico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ModificarDiagnostico.class.
+                getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ModificarDiagnostico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ModificarDiagnostico.class.
+                getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ModificarDiagnostico.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ModificarDiagnostico.class.
+                getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -329,7 +333,8 @@ if(evt.getKeyChar() == KeyEvent.VK_TAB){
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ModificarDiagnostico dialog = new ModificarDiagnostico(new javax.swing.JFrame(), true);
+                ModificarDiagnostico dialog = new ModificarDiagnostico(
+                    new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

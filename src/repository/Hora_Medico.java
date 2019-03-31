@@ -58,7 +58,7 @@ public class Hora_Medico {
 
             String estado = Conexion.runner().query(
                     "Select Estado_Hora_Medico from revista where ID_Hora_Medico = ?",
-                    rs -> rs.getString(0), ID);
+                    rs -> rs.next()? rs.getString(0) : null, ID);
 
             if ("Activo".equals(estado)) {
 

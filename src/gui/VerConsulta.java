@@ -7,10 +7,11 @@ package gui;
 
 import repository.Conexion;
 import repository.Consulta;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
@@ -167,37 +168,33 @@ public class VerConsulta extends javax.swing.JInternalFrame {
         setBounds(0, 0, 705, 510);
     }// </editor-fold>//GEN-END:initComponents
 
-    public void Modificar(){
-        
-      
-int Fila = jTable1.getSelectedRow();
+    public void Modificar() {
 
-       // System.out.println("Fila "+Fila);
+        int Fila = jTable1.getSelectedRow();
 
-if(Fila >= 0){
-  
-    int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
-    
-        ModificarDiagnostico MD = new ModificarDiagnostico(null, true);
-        MD.CargarDatos(ID);
-        MD.setVC(this);
-        MD.setVisible(true);
-        
+        // System.out.println("Fila "+Fila);
+        if (Fila >= 0) {
+
+            int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
+
+            ModificarDiagnostico MD = new ModificarDiagnostico(null, true);
+            MD.CargarDatos(ID);
+            MD.setVC(this);
+            MD.setVisible(true);
+
 //        this.toBack();
 //        ME.toFront();
-        
-    
-}
-else{
-    JOptionPane.showMessageDialog(this, "Debe seleccionar el registro a modificar", 
-            "Seleccione", JOptionPane.ERROR_MESSAGE);  
-}
-  
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar el registro a modificar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
+        }
+
     }
-    
-    
+
+
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-Modificar();
+        Modificar();
 // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -205,43 +202,51 @@ Modificar();
         this.dispose();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    ResultSet resultado;
-    
-    public void CargarDatos(){
-           
+    public void CargarDatos() {
+
         model.setRowCount(0);
-        
-        String[] Header = {"No.", "Fecha cita", "Medico", "Paciente", "Descripcion consulta",
+
+        String[] Header = {"No.", "Fecha cita", "Medico", "Paciente",
+            "Descripcion consulta",
             "Diagnostico", "Receta", "Estado"};
         model.setColumnIdentifiers(Header);
 
-        String[] Datos = new String[8];
-
         try {
 
-            resultado = Conexion.consulta("Select * from ConsultaV");
+            Conexion.runner().query("Select * from ConsultaV",
+                rs -> {
 
-            while (resultado.next()) {
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
-                Date Fecha = resultado.getDate(2);
-                Datos[1] = SDF.format(Fecha);
-                String Medico = "Dr. " + resultado.getString(3).trim() + " " + resultado.getString(4).trim();
-                Datos[2] = Medico;
-                String Paciente = resultado.getString(5).trim() + " " + resultado.getString(6).trim();
-                Datos[3] = Paciente;
-                Datos[4] = resultado.getString(7);
-                Datos[5] = resultado.getString(8);
-                Datos[6] = resultado.getString(9);
-                boolean Estado = resultado.getBoolean(10);
-                String Estate = "Inactivo";
-                if (Estado) {
-                    Estate = "Activo";
+                List<String[]> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    String[] Datos = new String[8];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
+                    Date Fecha = rs.getDate(2);
+                    Datos[1] = SDF.format(Fecha);
+                    String Medico = "Dr. " + rs.getString(3).trim() + " " + rs.
+                        getString(4).trim();
+                    Datos[2] = Medico;
+                    String Paciente = rs.getString(5).trim() + " "
+                        + rs.getString(6).trim();
+                    Datos[3] = Paciente;
+                    Datos[4] = rs.getString(7);
+                    Datos[5] = rs.getString(8);
+                    Datos[6] = rs.getString(9);
+                    boolean Estado = rs.getBoolean(10);
+                    String Estate = "Inactivo";
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[7] = Estate;
+
+                    r.add(Datos);
                 }
-                Datos[7] = Estate;
 
-                model.addRow(Datos);
-            }
+                return r;
+
+            }).stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
@@ -252,92 +257,102 @@ Modificar();
 
     private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameOpened
 
-     CargarDatos();
+        CargarDatos();
 
 // TODO add your handling code here:
     }//GEN-LAST:event_formInternalFrameOpened
 
-      public void ActDes(){
-        
-           
-int Fila = jTable1.getSelectedRow();
-int Col = 7;
+    public void ActDes() {
 
-     //   System.out.println("Fila "+Fila);
+        int Fila = jTable1.getSelectedRow();
+        int Col = 7;
 
-if(Fila >= 0){
-  
-    int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
-    String Estado = model.getValueAt(Fila, Col).toString();
-    
-    if(Estado.equalsIgnoreCase("Activo")){
-     Consulta.Desactivar_Consulta(ID); //Des  
-    }
-    if(Estado.equalsIgnoreCase("Inactivo")){
-      Consulta.Activar_Consulta(ID);  //Act
+        //   System.out.println("Fila "+Fila);
+        if (Fila >= 0) {
+
+            int ID = Integer.parseInt(model.getValueAt(Fila, 0).toString());
+            String Estado = model.getValueAt(Fila, Col).toString();
+
+            if (Estado.equalsIgnoreCase("Activo")) {
+                Consulta.Desactivar_Consulta(ID); //Des  
+            }
+            if (Estado.equalsIgnoreCase("Inactivo")) {
+                Consulta.Activar_Consulta(ID);  //Act
+            }
+
+            CargarDatos();
+
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar el registro a Activar/Desactivar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    CargarDatos();
-    
-}
-else{
-    JOptionPane.showMessageDialog(this, "Debe seleccionar el registro a Activar/Desactivar", 
-            "Seleccione", JOptionPane.ERROR_MESSAGE);  
-} 
-    }
-    
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-     ActDes();   // TODO add your handling code here:
+        ActDes();   // TODO add your handling code here:
     }//GEN-LAST:event_jButton4ActionPerformed
 
-    public void Buscar(){
-          String Buscar = txtBuscar.getText();
-          
-              model.setRowCount(0);
-        
-        String[] Header = {"No.", "Fecha cita", "Medico", "Paciente", "Descripcion consulta",
+    public void Buscar() {
+        String Buscar = txtBuscar.getText();
+
+        model.setRowCount(0);
+
+        String[] Header = {"No.", "Fecha cita", "Medico", "Paciente",
+            "Descripcion consulta",
             "Diagnostico", "Receta", "Estado"};
         model.setColumnIdentifiers(Header);
 
-        String[] Datos = new String[8];
-
+        String query = null;
         try {
 
-               if(cmbBusc.getSelectedIndex()==0){
-            resultado = Conexion.consulta("Select * from ConsultaV "
-                    + "where Nombres like '%"+Buscar+"%' "
-                    + "or Apellidos like '%"+Buscar+"%'");
-               }
-               
-               
-               if(cmbBusc.getSelectedIndex()==1){
-            resultado = Conexion.consulta("Select * from ConsultaV "
-                    + "where NombresMed like '%"+Buscar+"%' "
-                    + "or ApellidosMed like '%"+Buscar+"%'");
-               }
-         
-                 
-            while (resultado.next()) {
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
-                Date Fecha = resultado.getDate(2);
-                Datos[1] = SDF.format(Fecha);
-                String Medico = "Dr. " + resultado.getString(3).trim() + " " + resultado.getString(4).trim();
-                Datos[2] = Medico;
-                String Paciente = resultado.getString(5).trim() + " " + resultado.getString(6).trim();
-                Datos[3] = Paciente;
-                Datos[4] = resultado.getString(7);
-                Datos[5] = resultado.getString(8);
-                Datos[6] = resultado.getString(9);
-                boolean Estado = resultado.getBoolean(10);
-                String Estate = "Inactivo";
-                if (Estado) {
-                    Estate = "Activo";
-                }
-                Datos[7] = Estate;
-
-                model.addRow(Datos);
+            if (cmbBusc.getSelectedIndex() == 0) {
+                query = "Select * from ConsultaV "
+                    + "where Nombres like ? "
+                    + "or Apellidos like ?";
             }
+
+            if (cmbBusc.getSelectedIndex() == 1) {
+                query = "Select * from ConsultaV "
+                    + "where NombresMed like ? "
+                    + "or ApellidosMed like ?";
+            }
+
+            Conexion.runner().query(query,
+                rs -> {
+
+                List<String[]> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    String[] Datos = new String[8];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
+                    Date Fecha = rs.getDate(2);
+                    Datos[1] = SDF.format(Fecha);
+                    String Medico = "Dr. " + rs.getString(3).trim() + " " + rs.
+                        getString(4).trim();
+                    Datos[2] = Medico;
+                    String Paciente = rs.getString(5).trim() + " "
+                        + rs.getString(6).trim();
+                    Datos[3] = Paciente;
+                    Datos[4] = rs.getString(7);
+                    Datos[5] = rs.getString(8);
+                    Datos[6] = rs.getString(9);
+                    boolean Estado = rs.getBoolean(10);
+                    String Estate = "Inactivo";
+                    if (Estado) {
+                        Estate = "Activo";
+                    }
+                    Datos[7] = Estate;
+
+                    r.add(Datos);
+                }
+
+                return r;
+            },
+                "%" + Buscar + "%",
+                "%" + Buscar + "%").stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
@@ -345,9 +360,9 @@ else{
 
         jTable1.setModel(model);
     }
-    
+
     private void txtBuscarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyReleased
-Buscar();        // TODO add your handling code here:
+        Buscar();        // TODO add your handling code here:
     }//GEN-LAST:event_txtBuscarKeyReleased
 
     DefaultTableModel model = new DefaultTableModel() {

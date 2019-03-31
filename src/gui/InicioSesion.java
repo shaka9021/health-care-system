@@ -182,7 +182,8 @@ public class InicioSesion extends javax.swing.JDialog {
                     + "where "
                     + "Nombre_Usuario = ? "
                     + "and Contrasena_Usuario = ? and Estado = 1",
-                    rs -> {
+                    rs -> { if (!rs.next()) return null;
+                        
                     Principal principal = new Principal();
 
                     principal.setID_Usuario(rs.getInt("ID_Usuario"));
@@ -191,6 +192,7 @@ public class InicioSesion extends javax.swing.JDialog {
                     return principal;
                 }, User, Pass);
             } catch (SQLException ex) {
+                ex.printStackTrace();
             }
 
             if (P == null) {

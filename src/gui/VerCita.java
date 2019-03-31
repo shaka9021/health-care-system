@@ -7,10 +7,11 @@ package gui;
 
 import repository.Cita;
 import repository.Conexion;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
@@ -170,19 +171,22 @@ public class VerCita extends javax.swing.JInternalFrame {
             } else {
 
                 if (Estado.equalsIgnoreCase("Atendida")) {
-                    JOptionPane.showMessageDialog(this, "Ya se ha atendido esta cita",
-                            "Atendida", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                        "Ya se ha atendido esta cita",
+                        "Atendida", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Ya ha cancelado esta cita anteriormente",
-                            "Cancelada", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                        "Ya ha cancelado esta cita anteriormente",
+                        "Cancelada", JOptionPane.ERROR_MESSAGE);
                 }
             }
 
             CargarDatos();
 
         } else {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar la cita a cancelar",
-                    "Seleccione", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Debe seleccionar la cita a cancelar",
+                "Seleccione", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -200,31 +204,41 @@ public class VerCita extends javax.swing.JInternalFrame {
 
         model.setRowCount(0);
 
-        String[] Header = {"No.", "Medico", "Fecha", "Dia", "Hora", "Paciente", "Estado"};
+        String[] Header = {"No.", "Medico", "Fecha", "Dia", "Hora", "Paciente",
+            "Estado"};
         model.setColumnIdentifiers(Header);
-
-        String[] Datos = new String[7];
 
         try {
 
-            resultado = Conexion.consulta("Select ID_Cita,Nombres_Med,Apellidos_Med,"
-                    + "Fecha_Cita,Dia_Cita,Hora_Cita,Nombres,Apellidos,Estado from CitaV");
+            Conexion.runner().query(
+                "Select ID_Cita,Nombres_Med,Apellidos_Med,"
+                + "Fecha_Cita,Dia_Cita,Hora_Cita,Nombres,Apellidos,Estado from CitaV",
+                rs -> {
 
-            while (resultado.next()) {
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                String Medico = "Dr. " + resultado.getString(2).trim() + " " + resultado.getString(3).trim();
-                Datos[1] = Medico;
-                SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
-                Date Fecha = resultado.getDate(4);
-                Datos[2] = SDF.format(Fecha);
-                Datos[3] = resultado.getString(5);
-                Datos[4] = resultado.getString(6);
-                String Paciente = resultado.getString(7).trim() + " " + resultado.getString(8).trim();
-                Datos[5] = Paciente;
-                Datos[6] = resultado.getString(9);
+                List<String[]> r = new ArrayList<>();
 
-                model.addRow(Datos);
-            }
+                while (rs.next()) {
+                    String[] Datos = new String[7];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    String Medico = "Dr. " + rs.getString(2).trim() + " " + rs.
+                        getString(3).trim();
+                    Datos[1] = Medico;
+                    SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
+                    Date Fecha = rs.getDate(4);
+                    Datos[2] = SDF.format(Fecha);
+                    Datos[3] = rs.getString(5);
+                    Datos[4] = rs.getString(6);
+                    String Paciente = rs.getString(7).trim() + " "
+                        + rs.getString(8).trim();
+                    Datos[5] = Paciente;
+                    Datos[6] = rs.getString(9);
+
+                    r.add(Datos);
+                }
+
+                return r;
+            }).stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
@@ -232,8 +246,6 @@ public class VerCita extends javax.swing.JInternalFrame {
 
         jTable1.setModel(model);
     }
-
-    ResultSet resultado;
 
     private void formInternalFrameOpened(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameOpened
 
@@ -242,62 +254,74 @@ public class VerCita extends javax.swing.JInternalFrame {
 // TODO add your handling code here:
     }//GEN-LAST:event_formInternalFrameOpened
 
-    public void Buscar(){
-        
-         String Buscar = txtBuscar.getText();
-         
-             model.setRowCount(0);
-             
-        String[] Header = {"No.", "Medico", "Fecha", "Dia", "Hora", "Paciente", "Estado"};
+    public void Buscar() {
+
+        String Buscar = txtBuscar.getText();
+
+        model.setRowCount(0);
+
+        String[] Header = {"No.", "Medico", "Fecha", "Dia", "Hora", "Paciente",
+            "Estado"};
         model.setColumnIdentifiers(Header);
 
-        String[] Datos = new String[7];
+        String query = null;
 
         try {
 
-            if(cmbBusc.getSelectedIndex()==0){
-            resultado = Conexion.consulta("Select ID_Cita,Nombres_Med,Apellidos_Med,"
+            if (cmbBusc.getSelectedIndex() == 0) {
+                query = "Select ID_Cita,Nombres_Med,Apellidos_Med,"
                     + "Fecha_Cita,Dia_Cita,Hora_Cita,Nombres,Apellidos,Estado from CitaV "
-                    + "where Nombres like '%"+Buscar+"%' "
-                    + "or Apellidos like '%"+Buscar+"%'");
+                    + "where Nombres like ? "
+                    + "or Apellidos like ?";
             }
-            
-            
-            if(cmbBusc.getSelectedIndex()==1){
-            resultado = Conexion.consulta("Select ID_Cita,Nombres_Med,Apellidos_Med,"
+
+            if (cmbBusc.getSelectedIndex() == 1) {
+                query = "Select ID_Cita,Nombres_Med,Apellidos_Med,"
                     + "Fecha_Cita,Dia_Cita,Hora_Cita,Nombres,Apellidos,Estado from CitaV "
-                    + "where Nombres_Med like '%"+Buscar+"%' "
-                    + "or Apellidos_Med like '%"+Buscar+"%'");
+                    + "where Nombres_Med like ? "
+                    + "or Apellidos_Med like ?";
             }
-            
 
-            while (resultado.next()) {
-                Datos[0] = String.valueOf(resultado.getInt(1));
-                String Medico = "Dr. " + resultado.getString(2).trim() + " " + resultado.getString(3).trim();
-                Datos[1] = Medico;
-                SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
-                Date Fecha = resultado.getDate(4);
-                Datos[2] = SDF.format(Fecha);
-                Datos[3] = resultado.getString(5);
-                Datos[4] = resultado.getString(6);
-                String Paciente = resultado.getString(7).trim() + " " + resultado.getString(8).trim();
-                Datos[5] = Paciente;
-                Datos[6] = resultado.getString(9);
+            Conexion.runner().query(query,
+                rs -> {
 
-                model.addRow(Datos);
-            }
+                List<String[]> r = new ArrayList<>();
+
+                while (rs.next()) {
+                    String[] Datos = new String[7];
+
+                    Datos[0] = String.valueOf(rs.getInt(1));
+                    String Medico = "Dr. " + rs.getString(2).trim() + " " + rs.
+                        getString(3).trim();
+                    Datos[1] = Medico;
+                    SimpleDateFormat SDF = new SimpleDateFormat("dd-MMM-yyyy");
+                    Date Fecha = rs.getDate(4);
+                    Datos[2] = SDF.format(Fecha);
+                    Datos[3] = rs.getString(5);
+                    Datos[4] = rs.getString(6);
+                    String Paciente = rs.getString(7).trim() + " "
+                        + rs.getString(8).trim();
+                    Datos[5] = Paciente;
+                    Datos[6] = rs.getString(9);
+
+                    r.add(Datos);
+                }
+
+                return r;
+            },
+                "%" + Buscar + "%",
+                "%" + Buscar + "%").stream().forEach(model::addRow);
 
         } catch (SQLException ex) {
 
         }
 
         jTable1.setModel(model);
-         
-         
+
     }
-    
+
     private void txtBuscarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarKeyReleased
-Buscar();        // TODO add your handling code here:
+        Buscar();        // TODO add your handling code here:
     }//GEN-LAST:event_txtBuscarKeyReleased
 
     DefaultTableModel model = new DefaultTableModel() {
