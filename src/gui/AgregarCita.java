@@ -463,19 +463,14 @@ public class AgregarCita extends javax.swing.JInternalFrame {
                 if (!rs.next()) {
                     return 0;
                 }
-                return rs.getInt(title);
+                return rs.getInt(1);
             });
 
         } catch (SQLException ex) {
         }
 
-        ID_Especialidad++;
-
         ID_Esp = new int[ID_Especialidad];
-
-        ID_Esp[0] = 0;
-
-        int i = 1;
+        int i = 0;
 
         try {
 
@@ -487,6 +482,7 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
                 while (rs.next()) {
                     results.add(rs.getInt(1));
+                    cmbEspecialidad.addItem(rs.getString(2));
                 }
 
                 return results;
@@ -495,7 +491,6 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
             for (Integer resultado : resultados) {
                 ID_Esp[i] = resultado;
-                cmbEspecialidad.addItem(resultado);
                 i++;
             }
 
@@ -519,13 +514,9 @@ public class AgregarCita extends javax.swing.JInternalFrame {
         } catch (SQLException ex) {
         }
 
-        ID_Paciente++;
 
         ID_Pac = new int[ID_Paciente];
-
-        ID_Pac[0] = 0;
-
-        int j = 1;
+        int j = 0;
 
         try {
 
@@ -575,12 +566,40 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
         }
 
-        ID_Medico++;
-
         ID_Med = new int[ID_Medico];
+        j = 0;
 
-        ID_Med[0] = 0;
+        try {
 
+            List<List<String>> resultados = Conexion.runner().query(
+                "Select ID_Medico, Nombres, Apellidos from Medico where Estado = ?",
+                rs -> {
+
+                ArrayList<List<String>> resultado = new ArrayList<>();
+
+                while (rs.next()) {
+                    resultado.add(Arrays.asList(rs.getString(1),
+                        rs.getString(2).
+                            trim() + " " + rs.getString(3).trim()));
+                }
+
+                return resultado;
+            },
+                1);
+
+            for (List<String> resultado : resultados) {
+
+                Iterator<String> iterator = resultado.iterator();
+
+                ID_Pac[j] = Integer.parseInt(iterator.next());
+                cmbMedico.addItem(iterator.next());
+
+                j++;
+            }
+        } catch (SQLException ex) {
+
+        }
+        
         jTable1.setDefaultRenderer(Object.class, new MiRender());
 
 // TODO add your handling code here:
