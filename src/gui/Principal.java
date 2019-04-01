@@ -20,7 +20,7 @@ public class Principal extends javax.swing.JFrame {
     public static Principal INSTANCE;
 
     /**
-     * Creates new form Principal
+     * se crea el formulario principal
      */
     public Principal() {
 
