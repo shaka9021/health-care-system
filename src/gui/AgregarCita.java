@@ -594,7 +594,7 @@ public class AgregarCita extends javax.swing.JInternalFrame {
 
                 Iterator<String> iterator = resultado.iterator();
 
-                ID_Pac[j] = Integer.parseInt(iterator.next());
+                ID_Med[j] = Integer.parseInt(iterator.next());
                 cmbMedico.addItem(iterator.next());
 
                 j++;
